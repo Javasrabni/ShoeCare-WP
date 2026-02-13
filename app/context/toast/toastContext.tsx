@@ -32,7 +32,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
             {toast && (
                 <div
-                    className={`fixed top-16 z-200  left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg shadow-lg text-white ${toast.type === "success"
+                    className={`fixed top-16 z-200 min-w-48 max-w-xs w-full left-1/2 transform -translate-x-1/2 px-4 py-3 rounded-lg shadow-lg text-white ${toast.type === "success"
                             ? "bg-green-500"
                             : toast.type === "error"
                                 ? "bg-red-500"

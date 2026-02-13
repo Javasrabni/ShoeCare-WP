@@ -7,7 +7,7 @@ const AuthClient = () => {
     const [formState, setFormState] = useState<boolean>(true);
 
     return (
-        <div className='flex flex-col gap-4 h-screen py-16'>
+        <div className='flex flex-col gap-4 h-full py-16'>
             <div className="relative bg-neutral-secondary-medium rounded-lg flex p-1 h-12 items-center">
                 {/* Elemen Sliding Background */}
                 <div

@@ -43,6 +43,18 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validasi format email jika diisi
+    if (email) {
+      const emailRegex =
+        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json(
+          { message: "Format email tidak valid" },
+          { status: 400 }
+        );
+      }
+    }
+
     // CAPTCHA VERIFICATION
     // if (!captchaToken) {
     //   return NextResponse.json({ error: "Captcha required" }, { status: 400 });

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/navbar";
 import { ToastProvider } from "./context/toast/toastContext";
+import { SpinnerProvider } from "./context/spinner/spinnerContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,8 +36,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
       >
         <ToastProvider>
-          <Navbar />
-          {children}
+          <SpinnerProvider>
+            <Navbar />
+            {children}
+          </SpinnerProvider>
         </ToastProvider>
       </body>
     </html>

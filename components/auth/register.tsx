@@ -1,11 +1,14 @@
 "use client"
 import { useState, useRef } from "react";
 import { useToast } from "@/app/context/toast/toastContext";
+import { useSpinner } from "@/app/context/spinner/spinnerContext";
 // import TurnstileWidget from "./cloudflare/turnstileWidget";
 
 const Register = () => {
     // Toast notification from context/toastContext.tsx
     const { showToast } = useToast();
+    // Spinner from context/spinnerContext.tsx
+    const { showSpinner, hideSpinner } = useSpinner();
 
     const [name, setName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
@@ -13,13 +16,19 @@ const Register = () => {
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
 
+    const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
     // const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     // const turnstileRef = useRef<any>(null);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
+            if(!acceptTerms) {
+                showToast('Anda harus menyetujui Syarat dan Ketentuan serta Kebijakan Privasi ShoeCare.', 'error');
+                return;
+            }
 
+            showSpinner("Sedang memproses...");
 
             // if (!captchaToken) {
             //     alert("Captcha belum diverifikasi");
@@ -47,13 +56,17 @@ const Register = () => {
             setConfirmPassword('');
             // turnstileRef.current?.reset();
             // setCaptchaToken(null);
+            hideSpinner();
             showToast(data.message || 'Registrasi berhasil!', 'success');
+
             const delay = setTimeout(() => {
                 window.location.reload();
             }, 2000);
             return () => clearTimeout(delay);
         } catch (error) {
             showToast('Terjadi kesalahan server.', 'error');
+        } finally {
+            hideSpinner();
         }
     }
 
@@ -87,7 +100,7 @@ const Register = () => {
             </div>
 
             <label htmlFor="remember" className="flex items-center mb-5">
-                <input id="remember" type="checkbox" className="w-4 h-4 border border-default-medium rounded-xs bg-transparent focus:ring-2 focus:ring-brand-soft" required />
+                <input id="remember" type="checkbox" className="w-4 h-4 border border-default-medium rounded-xs bg-transparent focus:ring-2 focus:ring-brand-soft" required onChange={(e) => setAcceptTerms(e.target.checked)} />
                 <p className="ms-2 text-sm font-medium text-heading select-none">Saya menyetujui <a href="#" className="text-fg-brand hover:underline">Syarat dan Ketentuan</a> serta <a href="#" className="text-fg-brand hover:underline">Kebijakan Privasi</a> ShoeCare.</p>
             </label>
             {/* <div className="mb-5 flex justify-center">

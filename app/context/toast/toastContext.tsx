@@ -21,9 +21,11 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
     const showToast = (message: string, type: ToastType = "info") => {
         setToast({ message, type });
 
-        setTimeout(() => {
+        const delay = setTimeout(() => {
             setToast(null);
         }, 3000);
+
+        return () => clearTimeout(delay);
     };
 
     return (

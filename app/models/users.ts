@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  email: {type: String, unique: true, required: true}, // UNIQUE, required untuk login
+  email: {type: String, unique: true, required: false}, // UNIQUE, required untuk login
   password: {type: String, required: true}, // Hashed dengan bcrypt/argon2
   phone: {type: String, unique: true}, // Format: +628123456789, UNIQUE
   name: {type: String, required: true}, // Nama lengkap user

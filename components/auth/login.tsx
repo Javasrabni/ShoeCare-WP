@@ -6,14 +6,14 @@ const Login = () => {
     return (
         <form className="max-w-sm mx-auto">
             <div className="mb-5">
-                <input type="email" id="email" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Masukkan Email" required />
+                <input type="text" id="text" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" inputMode="text" placeholder="Masukkan Nomor Telepon atau Email" required />
             </div>
             <div className="mb-5">
                 <input type="password" id="password" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Masukkan Kata Sandi" required />
             </div>
             <div className="mb-5">
-                <select id="remember" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs">
-                    <option value="" disabled selected>Masuk sebagai</option>
+                <select id="remember" defaultValue={''} className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs">
+                    <option value="" disabled>Masuk sebagai</option>
                     <option value="customer">Customer</option>
                     <option value="admin">Admin</option>
                     <option value="dropper">Dropper</option>

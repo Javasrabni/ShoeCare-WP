@@ -41,7 +41,7 @@ const Login = () => {
             //     window.location.reload();
             // }, 1500);
             hideSpinner();
-            router.push('/dashboard');
+            router.push('/layanan');
 
             // return () => clearTimeout(delay);
         } catch (error) {

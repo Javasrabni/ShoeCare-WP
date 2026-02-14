@@ -8,12 +8,8 @@ export async function getUser() {
   try {
     const cookieStore = await cookies();
     const cookie = cookieStore.get("token")?.value;
-    if (!cookie) {
-      return NextResponse.json(
-        { message: "Tidak ada token, silakan login" },
-        { status: 401 }
-      );
-    }
+    if (!cookie) return null;
+
     const payload = jwt.verify(cookie, process.env.JWT_SECRET_KEY!) as {
       userId: string;
     };

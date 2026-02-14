@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 const Page = async () => {
     const user = await getUser();
-    if(user){
+    if(user.isGuest == false){
         return redirect('/layanan');
     }
     return (

@@ -5,8 +5,7 @@ import jwt from "jsonwebtoken";
 export default async function proxy(request: NextRequest) {
   try {
     const token = request.cookies.get("token")?.value;
-    const isAdminRoute =
-      request.nextUrl.pathname.startsWith("/dashboard/admin");
+    const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
     // const isMemberRoute =
     //   request.nextUrl.pathname.startsWith("/dashboard/member");
 
@@ -37,5 +36,5 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/admin/:path*"],
 };

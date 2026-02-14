@@ -2,6 +2,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from 'next/image'
+import { MenuIcon } from "lucide-react";
+import Notification from "@/components/UI/navbar/notification/notification";
+import clsx from "clsx";
 
 interface NavbarClientProps {
     guestUser: boolean; // !Guest = LoggedIn
@@ -16,38 +19,60 @@ const NavbarClient = (props: NavbarClientProps) => {
     const showAuthButton = pathname !== '/auth';
 
     return (
-        <div className='sticky z-50 top-0 left-0 w-full flex items-center justify-between py-4 bg-white bg-white border-b border-gray-300 text-black px-6 sm:px-16'>
+        <div className='sticky z-50 top-0 left-0 w-full h-22.5 flex items-center justify-between py-4 bg-white border-b border-(--border) text-black px-6 sm:px-8'>
             <div>
-                <Link href="/">
-                    <h1 className="text-sm sm:text-base font-semibold">ShoeCare</h1>
-                </Link>
+                {props.guestUser == false ? (
+                    <button className="size-8 sm:ize-10 border border-default-medium rounded-lg flex items-center justify-center cursor-pointer">
+                        <MenuIcon size={16} />
+                    </button>
+                ) : (
+                    <Link href="/">
+                        <h1 className="text-sm sm:text-base font-semibold">ShoeCare</h1>
+                    </Link>
+                )}
             </div>
             <div>
                 {showAuthButton && (
                     <>
-                        {props.guestUser ? (
-                            <Link href="/auth">
-                                <button className='bg-blue-100 font-[inter] hover:bg-blue-100 text-blue-800 text-xs sm:text-sm sm:text-sm font-semibold py-2 px-4 rounded-lg transition duration-300 cursor-pointer'>
-                                    Login
-                                </button>
-                            </Link>
-                        ) : (
+                        {/* Navbar untuk user yang telah login */}
+                        {props.guestUser === false ? (
                             <div className="flex w-fit gap-8 items-center">
-                                <p className="text-xs sm:text-sm font-[inter] text-neutral-700 font-semibold capitalize">{props.role === "customer" ? 'Member Berbayar' : props.role}</p>
+                                <Notification withNotification withSearch withBorderRight />
                                 <Link href="/profil">
                                     <div className='flex items-center justify-center gap-4'>
-                                        <p className="text-xs sm:text-sm font-[inter] text-neutral-700">{props.userName}</p>
-                                        <div className="w-8 h-8 rounded-full bg-blue-200">
+
+                                        {/* User Information */}
+                                        <div className="flex flex-col gap-0 text-right">
+
+                                            {/* Role */}
+                                            <span className="flex items-center justify-end gap-2 ">
+                                                <div className="dot-pulse" />
+                                                <p className={clsx("text-xs sm:text-sm font-[poppins] font-semibold capitalize ", { "text-green-600": props.role == 'admin' })}>{props.role === "customer" ? 'Member Berbayar' : props.role}</p>
+                                            </span>
+
+                                            {/* Username */}
+                                            <p className="text-xs font-[inter] font-regular capitalize text-(--secondary)">{props.userName}</p>
+                                        </div>
+
+                                        {/* Photo Profile */}
+                                        <div className="size-12 rounded-full bg-(--primary)">
                                             {/* <Image src={} /> */}
                                         </div>
                                     </div>
                                 </Link>
                             </div>
+                        ) : (
+                            // Navbar untuk yang belum login
+                            <Link href="/auth">
+                                <button className='bg-blue-100 font-[inter] hover:bg-blue-100 text-blue-800 text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg transition duration-300 cursor-pointer'>
+                                    Login
+                                </button>
+                            </Link>
                         )}
                     </>
                 )}
             </div>
-        </div>
+        </div >
     )
 }
 

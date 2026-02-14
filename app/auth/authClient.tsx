@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import Login from '@/components/auth/login'
 import Register from '@/components/auth/register';
+import Link from 'next/link';
+import { ArrowLeftIcon } from 'lucide-react';
 
 const AuthClient = () => {
     const [formState, setFormState] = useState<boolean>(true);
@@ -30,7 +32,7 @@ const AuthClient = () => {
                         }`}
                     onClick={() => setFormState(false)}
                 >
-                    Daftar Akun (Customer)
+                    Daftar akun member
                 </button>
             </div>
 
@@ -38,7 +40,14 @@ const AuthClient = () => {
             <div className="mt-2">
                 {formState ? <Login /> : <Register />}
             </div>
-            
+
+            {/* Back button */}
+            <Link href="/">
+                <div className='fixed z-50 bottom-8 right-8  border border-default-medium px-4 py-1 rounded-lg flex items-center shadow-xs hover:bg-neutral-150 cursor-pointer text-body hover:text-heading'>
+                    <ArrowLeftIcon className="w-4 h-4 inline-block mr-2" size={16} />
+                    <p className="text-sm cursor-pointer">Kembali</p>
+                </div>
+            </Link>
         </div>
     )
 }

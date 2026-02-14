@@ -5,9 +5,8 @@ import { useSpinner } from "@/app/context/spinner/spinnerContext";
 // import TurnstileWidget from "./cloudflare/turnstileWidget";
 
 const Register = () => {
-    // Toast notification from context/toastContext.tsx
+    // Toast notification & Spinner from context/*.tsx
     const { showToast } = useToast();
-    // Spinner from context/spinnerContext.tsx
     const { showSpinner, hideSpinner } = useSpinner();
 
     const [name, setName] = useState<string>('');
@@ -23,7 +22,7 @@ const Register = () => {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
-            if(!acceptTerms) {
+            if (!acceptTerms) {
                 showToast('Anda harus menyetujui Syarat dan Ketentuan serta Kebijakan Privasi ShoeCare.', 'error');
                 return;
             }
@@ -72,8 +71,11 @@ const Register = () => {
 
     return (
         <form className="max-w-sm m-auto">
+            {/* <span>
+                <p className="text-sm text-yellow-600 mb-4 text-center">Dapatkan poin loyalitas dengan mendaftar sebagai member ShoeCare!</p>
+            </span> */}
             <div className="mb-5">
-                <input type="text" id="name" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Nama Anda" required onChange={(e) => setName(e.target.value)} autoComplete="off" />
+                <input type="text" id="name" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Nama Anda" required onChange={(e) => setName(e.target.value)} maxLength={30}/>
             </div>
 
             <div className="mb-5">
@@ -84,19 +86,19 @@ const Register = () => {
 
                     onChange={(e) => setPhone(e.target.value)}
                     maxLength={13}
-                    required autoComplete="off" />
+                    required  />
             </div>
 
             <div className="mb-5">
-                <input type="email" inputMode="email" id="email" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Email (Opsional)" onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
+                <input type="email" inputMode="email" id="email" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Email (Opsional)" onChange={(e) => setEmail(e.target.value)} />
             </div>
 
             <div className="mb-5">
-                <input type="password" id="password" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Kata Sandi" required onChange={(e) => setPassword(e.target.value)} autoComplete="off" />
+                <input type="password" id="password" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Kata Sandi" required onChange={(e) => setPassword(e.target.value)}  />
             </div>
 
             <div className="mb-5">
-                <input type="password" id="confirmPassword" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Konfirmasi Kata Sandi" required onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="off" />
+                <input type="password" id="confirmPassword" className="bg-transparent border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" placeholder="Konfirmasi Kata Sandi" required onChange={(e) => setConfirmPassword(e.target.value)}  />
             </div>
 
             <label htmlFor="remember" className="flex items-center mb-5">
@@ -106,7 +108,7 @@ const Register = () => {
             {/* <div className="mb-5 flex justify-center">
                 <TurnstileWidget onVerify={setCaptchaToken} />
             </div> */}
-            <button type="submit" className="text-white bg-blue-500 box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 w-full cursor-pointer focus:outline-none" onClick={handleSubmit}>Daftar</button>
+            <button type="submit" className="text-white bg-blue-500 box-border border border-transparent hover:bg-brand-strong focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 w-full cursor-pointer focus:outline-none" onClick={handleSubmit}>Daftar</button>
         </form>
 
 

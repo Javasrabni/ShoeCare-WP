@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, phone, password, passwordConfirm, } =
+    const { name, email, phone, password, passwordConfirm } =
       await request.json();
 
     // validasi semua kolom terisi
@@ -16,9 +16,17 @@ export async function POST(request: Request) {
       );
     }
 
-    if(name.length < 5){
+    // validasi panjang nama minimal 5 karakter
+    if (name.length < 5) {
       return NextResponse.json(
         { message: "Nama minimal 5 karakter" },
+        { status: 400 }
+      );
+    } 
+
+    if(name.length > 30) {
+      return NextResponse.json(
+        { message: "Nama maksimal 20 karakter" },
         { status: 400 }
       );
     }
@@ -45,11 +53,10 @@ export async function POST(request: Request) {
 
     // Validasi format email jika diisi
     if (email) {
-      const emailRegex =
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!emailRegex.test(email)) {
+      const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      if (!gmailRegex.test(email)) {
         return NextResponse.json(
-          { message: "Format email tidak valid" },
+          { message: "Email tidak valid." },
           { status: 400 }
         );
       }
@@ -78,7 +85,6 @@ export async function POST(request: Request) {
     // if (!verifyData.success) {
     //   return NextResponse.json({ message: "Captcha invalid" }, { status: 400 });
     // }
-
 
     // connect to DB
     await connectDB();
@@ -129,7 +135,6 @@ export async function POST(request: Request) {
       password: hashedPassword,
       role: "customer",
       isGuest: false,
-
     });
 
     return NextResponse.json(
@@ -137,7 +142,7 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return NextResponse.json(
       { message: "Terjadi kesalahan pada server" },
       { status: 500 }

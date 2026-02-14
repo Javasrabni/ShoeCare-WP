@@ -36,7 +36,7 @@ export const SpinnerProvider = ({ children }: { children: ReactNode }) => {
                 <div className="fixed inset-0 flex w-full items-center justify-center bg-[#00000070] z-50">
                     <div className="flex flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-md">
                         <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-blue-500" />
-                        <p className="text-sm font-medium text-gray-700">{spinner.message}</p>
+                        <p className="text-sm font-medium text-gray-700">{spinner.message || "Loading"}</p>
                     </div>
                 </div>
 

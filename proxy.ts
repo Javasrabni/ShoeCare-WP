@@ -10,10 +10,8 @@ export default async function proxy(request: NextRequest) {
     //   request.nextUrl.pathname.startsWith("/dashboard/member");
 
     if (!token) {
-      return NextResponse.json(
-        { message: "Login diperlukan untuk mengakses halaman ini" },
-        { status: 401 }
-      );
+      return NextResponse.redirect(new URL('/layanan', request.url));
+
     }
 
     const payload = jwt.verify(token, process.env.JWT_SECRET_KEY!) as {role: string};

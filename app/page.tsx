@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 
 export default async function Home() {
   const user = await getUser()
-  console.log(user.role)
-  if (user.isGuest == false) {
-    if (user.role !== "admin") {
+  // console.log(user.role)
+  if (user?.isGuest == false) {
+    if (user?.role !== "admin") {
       return redirect('/layanan')
     } else {
       return redirect('/admin/dashboard')
@@ -13,7 +13,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="px-6 sm:px-16 py-4 sm:py-8">
+    <div className="px-6 sm:px-16 py-4 sm:py-8">  
       <p>ShoeCare</p>
     </div>
   );

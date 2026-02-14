@@ -41,6 +41,7 @@ const Login = () => {
             //     window.location.reload();
             // }, 1500);
             hideSpinner();
+            await router.refresh()
             router.push('/layanan');
 
             // return () => clearTimeout(delay);

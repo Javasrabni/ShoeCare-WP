@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from 'next/image'
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, TrophyIcon, IdCardLanyardIcon } from "lucide-react";
 import Notification from "@/components/UI/navbar/notification/notification";
 import clsx from "clsx";
 
@@ -39,15 +39,25 @@ const NavbarClient = (props: NavbarClientProps) => {
                             <div className="flex w-fit gap-8 items-center">
                                 <Notification withNotification withSearch withBorderRight />
                                 <Link href="/profil">
-                                    <div className='flex items-center justify-center gap-4'>
+                                    <div className='flex items-center justify-center gap-3'>
 
                                         {/* User Information */}
-                                        <div className="flex flex-col gap-0 text-right">
+                                        <div className="flex flex-col gap-1 text-right">
 
                                             {/* Role */}
                                             <span className="flex items-center justify-end gap-2 ">
-                                                <div className="dot-pulse" />
-                                                <p className={clsx("text-xs sm:text-sm font-[poppins] font-semibold capitalize ", { "text-green-600": props.role == 'admin' })}>{props.role === "customer" ? 'Member Berbayar' : props.role}</p>
+                                                {/* <div className="dot-pulse" /> */}
+                                                <p className={clsx("text-xs sm:text-sm font-[poppins] font-semibold capitalize ", { "text-green-600": props.role === 'admin', "text-yellow-500": props.role === "customer" })}>
+                                                    {props.role === "customer" ? (
+                                                        <span className="flex flex-row items-center gap-2">
+                                                            <TrophyIcon size={16} /> Member
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex flex-row items-center gap-1">
+                                                            <IdCardLanyardIcon size={16} /> {props.role}
+                                                        </span>
+                                                    )}
+                                                </p>
                                             </span>
 
                                             {/* Username */}
@@ -70,8 +80,9 @@ const NavbarClient = (props: NavbarClientProps) => {
                             </Link>
                         )}
                     </>
-                )}
-            </div>
+                )
+                }
+            </div >
         </div >
     )
 }

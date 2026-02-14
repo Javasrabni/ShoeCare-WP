@@ -24,8 +24,8 @@ const inter = Inter({
 const poppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
-  style: 'normal', 
-  variable: '--font-poppins', 
+  style: 'normal',
+  variable: '--font-poppins',
 });
 
 
@@ -48,7 +48,9 @@ export default function RootLayout({
         <ToastProvider>
           <SpinnerProvider>
             <Navbar />
-            {children}
+            <div className="ml-70">
+              {children}
+            </div>
           </SpinnerProvider>
         </ToastProvider>
       </body>

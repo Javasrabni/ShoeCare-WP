@@ -48,9 +48,7 @@ export default function RootLayout({
         <ToastProvider>
           <SpinnerProvider>
             <Navbar />
-            <div className="ml-70">
-              {children}
-            </div>
+            {children}
           </SpinnerProvider>
         </ToastProvider>
       </body>

@@ -1,5 +1,5 @@
 // import Image from 'next/image'
-import { Layers3Icon, LayoutDashboardIcon, ShoppingCartIcon } from 'lucide-react'
+import { HomeIcon, Layers3Icon, LayoutDashboardIcon, ScrollTextIcon, ShoppingCartIcon } from 'lucide-react'
 
 interface SidebarType {
     userRole: string | null;
@@ -29,12 +29,12 @@ export const MenuListData: AdminMenuListType[] = [
         memberUser: [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, component: '' },  // Dashboard untuk member
             { id: 2, label: 'Pesanan Saya', icon: <ShoppingCartIcon size={20} />, component: '' },  // Menu untuk melihat pesanan
-            { id: 3, label: 'Riwayat Transaksi', component: '' }, // Profil
-            { id: 4, label: 'Profile', component: '' }, // Profil
+            { id: 3, label: 'Riwayat Transaksi', icon: <ScrollTextIcon size={20} />, component: '' }, // Profil
         ],
         guestUser: [
-            { id: 1, label: 'Beranda', component: '' },  // Menu utama untuk guest
+            { id: 1, label: 'Beranda', component: <HomeIcon size={20} /> },  // Menu utama untuk guest
             { id: 2, label: 'Lacak Pesanan', component: '' },  // Opsi layanan
+            { id: 3, label: 'Riwayat Transaksi', icon: <ScrollTextIcon size={20} />, component: '' }, // Profil
         ],
         support: [
             { id: 1, label: "Help center", component: '' },

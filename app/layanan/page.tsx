@@ -1,14 +1,11 @@
 import { getUser } from '@/lib/auth';
-import Sidebar from "@/components/admin/sidebar/sidebar";
+import LayananClient from './layananClient';
+
 
 async function Page() {
-    const user = await getUser();
-    // console.log('Dashboard User:', user);
+    const user = await getUser()
     return (
-        <div className='px-6 sm:px-16 py-8  '>
-            <Sidebar userRole={null} />
-            <p>Dashboard Page for User: {user?.name}</p>
-        </div>
+      <LayananClient userRole={user?.role} userName={user?.name} />
     )
 }
 

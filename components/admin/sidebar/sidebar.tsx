@@ -1,16 +1,15 @@
 // import Image from 'next/image'
 import { Layers3Icon, LayoutDashboardIcon, ShoppingCartIcon } from 'lucide-react'
-import { getUser } from '@/lib/auth';
 
 interface SidebarType {
-    userRole?: string;
+    userRole: string | null;
 }
 
 interface MenuList {
     id: number;
     label: string;
     icon?: React.ReactNode
-    component: React.ReactNode
+    component?: React.ReactNode
 }
 interface AdminMenuListType {
     guestUser: MenuList[];
@@ -25,7 +24,7 @@ export const MenuListData: AdminMenuListType[] = [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, component: '' },
             { id: 2, label: 'Daftar Pesanan', icon: <ShoppingCartIcon size={20} />, component: '' },
             { id: 3, label: 'Inventory', component: '' },
-            { id: 3, label: 'Anggota Member', component: '' },
+            { id: 4, label: 'Anggota Member', component: '' },
         ],
         memberUser: [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, component: '' },  // Dashboard untuk member
@@ -45,13 +44,12 @@ export const MenuListData: AdminMenuListType[] = [
 ]
 
 
-const Sidebar = async (props: SidebarType) => {
-    const user = await getUser()
+const Sidebar = (props: SidebarType) => {
     const menu = MenuListData[0]
     const GetMenuItems = () => {
-        if (user?.role === "admin") {
+        if (props.userRole === "admin") {
             return menu.admin
-        } else if (user?.role === "customer") {
+        } else if (props.userRole === "customer") {
             return menu.memberUser
         } else {
             return menu.guestUser
@@ -73,7 +71,7 @@ const Sidebar = async (props: SidebarType) => {
             {/* Menu */}
             <div className="p-5 flex flex-col gap-4">
                 <p className="text-sm text-(--secondary) font-[inter] select-none">
-                    Menu {user?.role == "customer" ? "member" : user.role}
+                    Menu {props.userRole == "customer" ? "member" : props.userRole || "Guest"}
                 </p>
 
                 {/* Parsing data list */}

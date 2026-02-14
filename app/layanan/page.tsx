@@ -6,7 +6,7 @@ async function Page() {
     // console.log('Dashboard User:', user);
     return (
         <div className='px-6 sm:px-16 py-8  '>
-            <Sidebar/>
+            <Sidebar userRole={null} />
             <p>Dashboard Page for User: {user?.name}</p>
         </div>
     )

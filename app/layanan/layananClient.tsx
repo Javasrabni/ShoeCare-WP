@@ -21,9 +21,6 @@ const LayananClient = (props: LayananType) => {
         setActiveMenu({ menu, userRole })
     }
 
-    console.log(activeMenu)
-
-
     return (
         <div className='px-6 sm:px-16 py-8 ml-70'>
             <Sidebar onMenuClick={handleMenuClick} userRole={props.userRole} userId={props.userId} />

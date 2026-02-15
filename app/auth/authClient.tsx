@@ -42,7 +42,7 @@ const AuthClient = () => {
             </div>
 
             {/* Back button */}
-            <Link href="/">
+            <Link href="/" className='flex sm:hidden'>
                 <div className='fixed z-50 bottom-8 right-8  border border-default-medium px-4 py-1 rounded-lg flex items-center shadow-xs hover:bg-neutral-150 cursor-pointer text-body hover:text-heading'>
                     <ArrowLeftIcon className="w-4 h-4 inline-block mr-2" size={16} />
                     <p className="text-sm cursor-pointer">Kembali</p>

@@ -8,7 +8,6 @@ interface Toast {
     message: string;
     type: ToastType;
 }
-
 interface ToastContextType {
     showToast: (message: string, type?: ToastType) => void;
 }
@@ -16,6 +15,7 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
+    // For Notification
     const [toast, setToast] = useState<Toast | null>(null);
 
     const showToast = (message: string, type: ToastType = "info") => {
@@ -28,8 +28,9 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
         return () => clearTimeout(delay);
     };
 
+
     return (
-        <ToastContext.Provider value={{ showToast }}>
+        <ToastContext.Provider value={{ showToast}}>
             {children}
 
             {toast && (

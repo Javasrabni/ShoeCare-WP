@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/navbar/navbar";
 import { ToastProvider } from "./context/toast/toastContext";
 import { SpinnerProvider } from "./context/spinner/spinnerContext";
+import { SidebarProvider } from "./context/sidebar/sidebarContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,8 +48,10 @@ export default function RootLayout({
       >
         <ToastProvider>
           <SpinnerProvider>
-            <Navbar />
-            {children}
+            <SidebarProvider>
+              <Navbar />
+              {children}
+            </SidebarProvider>
           </SpinnerProvider>
         </ToastProvider>
       </body>

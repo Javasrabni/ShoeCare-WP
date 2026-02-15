@@ -5,6 +5,8 @@ import { Dashboard } from '@/components/asideMenu/dashboard/dashboard';
 import { ClipboardCheckIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, MapPinHouseIcon, PackageIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon } from 'lucide-react'
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import clsx from 'clsx';
+import { useSidebar } from '@/app/context/sidebar/sidebarContext';
 
 interface SidebarType {
     userRole: string
@@ -34,7 +36,7 @@ export const MenuListData: AdminMenuListType[] = [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/admin/dashboard" },
             { id: 2, label: 'Semua Pesanan Masuk', icon: <ShoppingCartIcon size={20} />, path: "/admin/manajemen-order" },
             { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
-            { id: 4, label: 'Semua Ulasan', icon: <StarIcon  size={20} />, path: "/admin/semua-ulasan-customer" },
+            { id: 4, label: 'Semua Ulasan', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
         ],
         memberUser: [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, },  // Dashboard untuk member
@@ -65,6 +67,8 @@ export const MenuListData: AdminMenuListType[] = [
 
 
 const Sidebar = (props: SidebarType) => {
+    const { sidebarStatus, sidebarToggle } = useSidebar()
+
     const router = useRouter()
     const menu = MenuListData[0]
     const staffInternal = MenuListData[0].staffInternal
@@ -90,8 +94,14 @@ const Sidebar = (props: SidebarType) => {
     }
 
 
+
+
     return (
-        <aside className="w-70 bg-white flex flex-col border-r border-(--border) h-screen fixed left-0 top-0 z-100">
+        <aside className={clsx(
+            "fixed left-0 top-0 h-screen w-70 bg-white border-r border-(--border) z-40 transition-transform duration-300 ease-in-out",
+            sidebarStatus ? "translate-x-0" : "-translate-x-full",
+            "md:translate-x-0"
+        )}>
             {/* Logo */}
             <div className='flex flex-row items-center justify-center gap-4 w-full h-22.5 shrink-0 border-b border-(--border)'>
                 <div className="bg-(--primary) size-fit px-2 py-1 text-white rounded-lg">

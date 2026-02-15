@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function Home() {
   const user = await getUser()
@@ -15,6 +16,7 @@ export default async function Home() {
   return (
     <div className="px-6 sm:px-16 py-4 sm:py-8">  
       <p>ShoeCare</p>
+      <Link href="/layanan">layanan</Link>
     </div>
   );
 }

@@ -2,9 +2,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from 'next/image'
-import { MenuIcon, TrophyIcon, IdCardLanyardIcon, ChevronRightIcon } from "lucide-react";
+import { MenuIcon, TrophyIcon, IdCardLanyardIcon, ChevronRightIcon, Layers3Icon, FootprintsIcon } from "lucide-react";
 import Notification from "@/components/UI/navbar/notification/notification";
 import clsx from "clsx";
+import { useEffect, useState } from "react";
 import { useSidebar } from '@/app/context/sidebar/sidebarContext';
 
 interface NavbarClientProps {
@@ -16,6 +17,7 @@ interface NavbarClientProps {
 
 const NavbarClient = (props: NavbarClientProps) => {
     const { sidebarStatus, sidebarToggle } = useSidebar()
+    console.log(sidebarStatus)
 
     const pathname = usePathname()  // contoh: "/admin/manajemen-order/detail"
     // Split path jadi array, filter agar kosong hilang
@@ -24,27 +26,52 @@ const NavbarClient = (props: NavbarClientProps) => {
     // State to control visibility of Auth button
     const showAuthButton = pathname !== '/auth';
 
-    return (
-        <div className='flex-1'>
-            {/* Open sidebar toggle */}
-            <div className="flex fixed bottom-8 right-8 z-50 md:hidden">
-                <button className="size-8 sm:size-10 border border-default-medium rounded-lg flex items-center justify-center cursor-pointer bg-white" onClick={() => sidebarToggle()}>
-                    <MenuIcon size={16} />
-                </button>
-            </div>
+    const userPath = pathname.startsWith('/layanan')
+    const adminPath = pathname.startsWith('/admin')
+    const authPath = pathname.startsWith('/auth')
 
-            <div className={clsx("sticky z-30 top-0 left-0 w-full h-22.5 flex items-center justify-between py-4 bg-white border-b border-(--border) text-black px-6 sm:px-8 transition duration-300 ease-in-out", sidebarStatus ?'ml-70' : "ml-0")}>
+
+    // Menghindari konfilk z-index saat transisi opacity
+    const [navbarZ, setNavbarZ] = useState("z-30");
+    useEffect(() => {
+        if (sidebarStatus) {
+            setNavbarZ("-z-5");
+        } else {
+            const delay = setTimeout(() => {
+                setNavbarZ("z-30");
+            }, 530); // samakan dengan durasi transition overlay
+
+            return () => clearTimeout(delay);
+        }
+    }, [sidebarStatus]);
+
+
+    return (
+        <>
+            {/* Open sidebar toggle */}
+            {(userPath || adminPath) && (
+
+                <div className="flex fixed bottom-8 right-8 z-150 md:hidden bg-white rounded-lg" onClick={() => sidebarToggle()}>
+                    <button className="size-10 sm:size-10 border border-default-medium rounded-lg flex items-center justify-center cursor-pointer" >
+                        <MenuIcon size={16} />
+                    </button>
+                </div>
+            )}
+
+            <div id="navbarIndex" className={clsx(`sticky ${navbarZ} top-0 left-0 w-full h-22.5 flex items-center justify-between  bg-white border-b border-(--border) text-black `, sidebarStatus ? 'py-4 pr-6 sm:pr-8 pl-6 md:pl-78' : 'py-4 pr-6 sm:pr-8 pl-6 md:pl-8', (userPath || adminPath) && "md:pl-78")}>
 
 
 
                 {/* Logo identity */}
-                <div className="flex flex-row gap-3 items-center pr-12">
-                    <Link href="/">
-                        <h1 className="text-sm sm:text-base font-[poppins] font-semibold">ShoeCare</h1>
-                    </Link>
+                <div className={clsx("flex flex-row items-center justify-center gap-4  h-22.5 pr-8", (userPath || adminPath) && "md:hidden")}>
+                    <div className="bg-(--primary) size-fit px-2 py-1 text-white rounded-lg">
+                        <FootprintsIcon size={24} />
+                        {/* <Image /> */}
+                    </div>
+                    <h1 className="text-base sm:text-xl font-[poppins] font-semibold">ShoeCare</h1>
                 </div>
 
-                <div className="text-(--secondary) flex flex-row gap-3 items-center">
+                <div className={clsx("text-(--secondary) flex-row gap-3 items-center hidden", (userPath || adminPath) && "hidden md:flex")}>
                     {pathSegments.map((segment, idx) => {
                         // Buat label bisa diubah, contoh ubah dash jadi spasi, kapitalisasi
                         const label = segment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
@@ -78,7 +105,7 @@ const NavbarClient = (props: NavbarClientProps) => {
                         <>
                             {/* Navbar untuk user yang telah login */}
                             {props.guestUser === false ? (
-                                <div className="flex w-fit gap-8 items-center">
+                                <div className="flex w-fit gap-2 sm:gap-8 items-center">
 
                                     <Notification withNotification withSearch withBorderRight />
                                     <Link href="/profil">
@@ -125,9 +152,10 @@ const NavbarClient = (props: NavbarClientProps) => {
                         </>
                     )
                     }
-                </div >
-            </div >
-        </div>
+                </div>
+            </div>
+        </>
+
     )
 }
 

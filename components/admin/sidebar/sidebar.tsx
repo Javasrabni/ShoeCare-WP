@@ -34,7 +34,7 @@ export const MenuListData: AdminMenuListType[] = [
     {
         admin: [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/admin/dashboard" },
-            { id: 2, label: 'Semua Pesanan Masuk', icon: <ShoppingCartIcon size={20} />, path: "/admin/manajemen-order" },
+            { id: 2, label: 'Pesanan', icon: <ShoppingCartIcon size={20} />, path: "/admin/manajemen-order" },
             { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
             { id: 4, label: 'Semua Ulasan', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
         ],
@@ -97,75 +97,78 @@ const Sidebar = (props: SidebarType) => {
 
 
     return (
-        <aside className={clsx(
-            "fixed left-0 top-0 h-screen w-70 bg-white border-r border-(--border) z-40 transition-transform duration-300 ease-in-out",
-            sidebarStatus ? "translate-x-0" : "-translate-x-full",
-            "md:translate-x-0"
-        )}>
-            {/* Logo */}
-            <div className='flex flex-row items-center justify-center gap-4 w-full h-22.5 shrink-0 border-b border-(--border)'>
-                <div className="bg-(--primary) size-fit px-2 py-1 text-white rounded-lg">
-                    <Layers3Icon size={24} />
-                    {/* <Image /> */}
-                </div>
-                <h1 className="text-xl font-[poppins] font-semibold">ShoeCare</h1>
-            </div>
+        <>
+            <div id="overlay" className={`fixed top-0 right-0 w-full h-full bg-[#00000070] transition  ease-in-out ${sidebarStatus ? "z-35 opaciy-1 duration-500" : "-z-4 opacity-0 duration-700"}`} onClick={() => sidebarToggle()} />
 
-            {/* Menu */}
-            <div className="p-5 flex w-full h-full flex-col gap-4 overflow-y-auto">
-                <p className="text-sm text-(--secondary) font-[inter] select-none">
-                    Menu {props.userRole == "customer" ? "member" : props.userRole || "Guest"}
-                </p>
-
-                {/* Parsing data list */}
-                <div className="w-full">
-                    {GetMenuItems().map((i, idx) =>
-                        <ul key={idx}>
-                            <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black" onClick={() => handleClickMenu(i.label, props.userRole, i.path)}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
-                        </ul>
-                    )}
+            <aside className={clsx(
+                "fixed left-0 top-0 h-screen w-70 bg-white border-r border-(--border) z-40 transition-transform ",
+                sidebarStatus ? "translate-x-0 duration-300" : "-translate-x-full duration-500",
+                "md:translate-x-0"
+            )}>
+                {/* Logo */}
+                <div className='flex flex-row items-center justify-center gap-4 w-full h-22.5 shrink-0 border-b border-(--border)'>
+                    <div className="bg-(--primary) size-fit px-2 py-1 text-white rounded-lg">
+                        <Layers3Icon size={24} />
+                        {/* <Image /> */}
+                    </div>
+                    <h1 className="text-base sm:text-xl font-[poppins] font-semibold">ShoeCare</h1>
                 </div>
 
+                {/* Menu */}
+                <div className="p-5 flex w-full h-[calc(100vh-90px)] flex-col gap-4 overflow-y-auto">
+                    <p className="text-sm text-(--secondary) font-[inter] select-none">
+                        Menu {props.userRole == "customer" ? "member" : props.userRole || "Guest"}
+                    </p>
 
-
-                {props.userRole === "admin" && (
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-4">
-                            <p className="text-sm text-(--secondary) font-[inter] select-none">
-                                Manajemen Customer
-                            </p>
-                            <div className='h-full'>
-                                {manajemenPengguna.map((i, idx) =>
-                                    <ul key={idx}>
-                                        <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
-                                    </ul>
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <p className="text-sm text-(--secondary) font-[inter] select-none">
-                                Staff Internal
-                            </p>
-                            <div className='h-full'>
-                                {staffInternal.map((i, idx) =>
-                                    <ul key={idx}>
-                                        <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
-                                    </ul>
-                                )}
-                            </div>
-                        </div>
+                    {/* Parsing data list */}
+                    <div className="w-full">
+                        {GetMenuItems().map((i, idx) =>
+                            <ul key={idx}>
+                                <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black" onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle() }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                            </ul>
+                        )}
                     </div>
 
-                )}
-                <div className="border-t border-(--border) w-full pt-4">
-                    {support.map((i, idx) =>
-                        <ul key={idx} className="flex flex-col gap-2">
-                            <li className="px-4 py-2 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
-                        </ul>
+                    {props.userRole === "admin" && (
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-4">
+                                <p className="text-sm text-(--secondary) font-[inter] select-none">
+                                    Manajemen Customer
+                                </p>
+                                <div className='h-full'>
+                                    {manajemenPengguna.map((i, idx) =>
+                                        <ul key={idx}>
+                                            <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-4">
+                                <p className="text-sm text-(--secondary) font-[inter] select-none">
+                                    Staff Internal
+                                </p>
+                                <div className='h-full'>
+                                    {staffInternal.map((i, idx) =>
+                                        <ul key={idx}>
+                                            <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                     )}
+                    <div className="border-t border-(--border) w-full pt-4">
+                        {support.map((i, idx) =>
+                            <ul key={idx} className="flex flex-col gap-2">
+                                <li className="px-4 py-2 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                            </ul>
+                        )}
+                    </div>
                 </div>
-            </div>
-        </aside>
+            </aside>
+        </>
+
     )
 }
 

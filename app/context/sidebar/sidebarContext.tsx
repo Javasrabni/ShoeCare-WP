@@ -12,7 +12,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
     const [sidebarStatus, setSidebarStatus] = useState(false);
-
+    // console.log(sidebarStatus)
     const sidebarToggle = () => {
         setSidebarStatus(prev => !prev);
     };

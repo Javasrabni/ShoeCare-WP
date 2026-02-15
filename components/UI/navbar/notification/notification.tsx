@@ -10,7 +10,7 @@ const Notification = (props: UIInfo) => {
     return (
         <div className={`flex flex-row items-center gap-3 pr-4 ${props.withBorderRight && "border-r border-(--border)"}`}>
             {props.withSearch && (
-                <div className="size-12 rounded-lg text-(--secondary) border border-(--border) cursor-pointer flex items-center justify-center hover:bg-neutral-100">
+                <div className="size-12 rounded-lg text-(--secondary) border border-(--border) cursor-pointer items-center justify-center hover:bg-neutral-100 hidden sm:flex">
                     <SearchIcon size={16} />
                 </div>
             )}

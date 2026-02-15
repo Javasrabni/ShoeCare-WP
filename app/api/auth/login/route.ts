@@ -32,10 +32,12 @@ export async function POST(request: Request) {
       );
     }
 
-    await connectDB();
     let phoneorEmail = identifier.includes("@")
       ? identifier
       : identifier.replace("0", "62");
+
+    // DB
+    await connectDB();
 
     const user = await Users.findOne({
       $or: [{ email: phoneorEmail }, { phone: phoneorEmail }],
@@ -54,7 +56,6 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
-
 
     const token = jwt.sign(
       {

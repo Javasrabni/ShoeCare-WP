@@ -1,6 +1,7 @@
 import connectDB from "./mongodb";
 import { Users } from "@/app/models/users";
 import { NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
@@ -15,8 +16,10 @@ export async function getUser() {
     };
 
     await connectDB();
-    const user = await Users.findById(payload.userId).select("-password");
-    return user || null;
+    const user = await Users.findById(payload.userId).select("_id name role email isGuest").lean();
+    if(!user) return null
+
+    return user;
   } catch (error) {
     console.error("Error getting user:", error);
     return null;

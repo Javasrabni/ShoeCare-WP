@@ -114,7 +114,7 @@ const NavbarClient = (props: NavbarClientProps) => {
                                         <div className='flex items-center justify-center gap-3'>
 
                                             {/* User Information */}
-                                            <div className="flex flex-col gap-1 text-right">
+                                            <div className="flex flex-col gap-1 items-end text-right">
 
                                                 {/* Role */}
                                                 <span className="flex items-center justify-end gap-2 ">
@@ -133,7 +133,7 @@ const NavbarClient = (props: NavbarClientProps) => {
                                                 </span>
 
                                                 {/* Username */}
-                                                <p className="hidden sm:flex text-xs font-[inter] font-regular capitalize text-(--secondary)">{props.userName}</p>
+                                                <p className="text-right sm:flex text-xs font-[inter] font-regular capitalize text-(--secondary)">{props.userName}</p>
                                             </div>
 
                                             {/* Photo Profile */}

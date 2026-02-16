@@ -26,7 +26,7 @@ export async function getUser() {
   }
 }
 
-export async function logout() {
+export async function Logout() {
   try {
     const res = await fetch("/api/auth/logout", {
       method: "POST",

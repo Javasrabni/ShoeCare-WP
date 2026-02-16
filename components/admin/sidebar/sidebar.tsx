@@ -2,11 +2,12 @@
 
 // import Image from 'next/image'
 import { Dashboard } from '@/components/asideMenu/dashboard/dashboard';
-import { ArchiveIcon, ClipboardCheckIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon } from 'lucide-react'
+import { ArchiveIcon, ClipboardCheckIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon } from 'lucide-react'
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useSidebar } from '@/app/context/sidebar/sidebarContext';
+import { logout } from '@/lib/auth-client';
 
 interface SidebarType {
     userRole: string
@@ -96,6 +97,13 @@ const Sidebar = (props: SidebarType) => {
         if (props?.onMenuClick) { props.onMenuClick(label, userRole) }
     }
 
+    // Logout
+    const handleLogout = async () => {
+        await logout()
+        router.push("/layanan")
+        router.refresh()
+    }
+
     return (
         <>
             <div id="overlay" className={`fixed top-0 right-0 w-full h-full bg-[#00000070] transition  ease-in-out ${sidebarStatus ? "z-35 opaciy-1 duration-500" : "-z-4 opacity-0 duration-700"}`} onClick={() => sidebarToggle(false)} />
@@ -165,6 +173,13 @@ const Sidebar = (props: SidebarType) => {
                             </ul>
                         )}
                     </div>
+
+                    {/* Logout */}
+                    {props.userId && (
+                        <div className="border-t border-(--border) pt-4 p-4 select-none cursor-pointer" onClick={handleLogout}>
+                            <span className="text-[tomato] flex flex-row gap-3 items-center"><LogOutIcon size={18} /> <p className="font-[poppins] font-semibold text-xs sm:text-base ">Logout</p></span>
+                        </div>
+                    )}
                 </div>
             </aside>
         </>

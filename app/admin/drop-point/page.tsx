@@ -1,7 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import MapComponent from "../add-drop-point/MapComponent"
+import dynamic from "next/dynamic"
+
+const MapComponent = dynamic(
+  () => import("../add-drop-point/MapComponent"),
+  { ssr: false }
+)
+
+// import MapComponent from "../add-drop-point/MapComponent"
 import Link from "next/link"
 
 type DropPointType = {

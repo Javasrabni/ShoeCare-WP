@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Poppins } from "next/font/google";
-import "leaflet/dist/leaflet.css"
 import "./globals.css";
 import Navbar from "@/components/layout/navbar/navbar";
 import { ToastProvider } from "./context/toast/toastContext";

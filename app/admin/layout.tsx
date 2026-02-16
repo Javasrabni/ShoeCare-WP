@@ -1,4 +1,3 @@
-import "leaflet/dist/leaflet.css"
 import Sidebar from '@/components/admin/sidebar/sidebar';
 import { getUser } from '@/lib/auth';
 

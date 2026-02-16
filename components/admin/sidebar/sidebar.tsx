@@ -98,10 +98,10 @@ const Sidebar = (props: SidebarType) => {
 
     return (
         <>
-            <div id="overlay" className={`fixed top-0 right-0 w-full h-full bg-[#00000070] transition  ease-in-out ${sidebarStatus ? "z-35 opaciy-1 duration-500" : "-z-4 opacity-0 duration-700"}`} onClick={() => sidebarToggle()} />
+            <div id="overlay" className={`fixed top-0 right-0 w-full h-full bg-[#00000070] transition  ease-in-out ${sidebarStatus ? "z-35 opaciy-1 duration-500" : "-z-4 opacity-0 duration-700"}`} onClick={() => sidebarToggle(false)} />
 
             <aside className={clsx(
-                "fixed left-0 top-0 h-screen w-70 bg-white border-r border-(--border) z-40 transition-transform ",
+                "fixed left-0 top-0 h-full w-70 bg-white border-r border-(--border) z-40 transition-transform ",
                 sidebarStatus ? "translate-x-0 duration-300" : "-translate-x-full duration-500",
                 "md:translate-x-0"
             )}>
@@ -124,7 +124,7 @@ const Sidebar = (props: SidebarType) => {
                     <div className="w-full">
                         {GetMenuItems().map((i, idx) =>
                             <ul key={idx}>
-                                <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black" onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle() }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer hover:text-black" onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
                             </ul>
                         )}
                     </div>

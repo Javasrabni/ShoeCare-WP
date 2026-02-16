@@ -51,8 +51,8 @@ const NavbarClient = (props: NavbarClientProps) => {
             {/* Open sidebar toggle */}
             {(userPath || adminPath) && (
 
-                <div className="flex fixed bottom-8 right-8 z-150 md:hidden bg-white rounded-lg" onClick={() => sidebarToggle()}>
-                    <button className="size-10 sm:size-10 border border-default-medium rounded-lg flex items-center justify-center cursor-pointer" >
+                <div className="flex fixed bottom-8 right-8 z-150 md:hidden bg-(--primary) text-white rounded-lg shadow-xs" onClick={() => sidebarToggle(prev => !prev)}>
+                    <button className="size-10 sm:size-10 rounded-lg flex items-center justify-center cursor-pointer" >
                         <MenuIcon size={16} />
                     </button>
                 </div>
@@ -63,7 +63,7 @@ const NavbarClient = (props: NavbarClientProps) => {
 
 
                 {/* Logo identity */}
-                <div className={clsx("flex flex-row items-center justify-center gap-4  h-22.5 pr-8", (userPath || adminPath) && "md:hidden")}>
+                <div className={clsx("flex flex-row items-center justify-center gap-4  h-22.5 pr-2 sm:pr-8", (userPath || adminPath) && "md:hidden")}>
                     <div className="bg-(--primary) size-fit px-2 py-1 text-white rounded-lg">
                         <FootprintsIcon size={24} />
                         {/* <Image /> */}
@@ -131,11 +131,11 @@ const NavbarClient = (props: NavbarClientProps) => {
                                                 </span>
 
                                                 {/* Username */}
-                                                <p className="text-xs font-[inter] font-regular capitalize text-(--secondary)">{props.userName}</p>
+                                                <p className="hidden sm:flex text-xs font-[inter] font-regular capitalize text-(--secondary)">{props.userName}</p>
                                             </div>
 
                                             {/* Photo Profile */}
-                                            <div className="size-12 rounded-full bg-(--primary)">
+                                            <div className="size-8 md:size-12 shrink-0 rounded-full bg-(--primary)">
                                                 {/* <Image src={} /> */}
                                             </div>
                                         </div>

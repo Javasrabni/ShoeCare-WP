@@ -3,7 +3,6 @@ import { getUser } from "@/lib/auth";
 
 const Navbar = async () => {
     const user = await getUser();
-    console.log(user)
     return (
         <>
             <NavbarClient guestUser={user?.isGuest} userName={user?.name} role={user?.role}/>

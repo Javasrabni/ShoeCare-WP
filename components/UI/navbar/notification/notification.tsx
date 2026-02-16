@@ -15,7 +15,7 @@ const Notification = (props: UIInfo) => {
                 </div>
             )}
             {props.withNotification && (
-                <div className="size-12 rounded-lg border border-(--border) text-(--secondary) cursor-pointer flex items-center justify-center hover:bg-neutral-100">
+                <div className="size-12 rounded-lg border border-(--border) text-(--secondary) cursor-pointer hidden sm:flex items-center justify-center hover:bg-neutral-100">
                     <BellIcon size={16} />
                 </div>
             )}

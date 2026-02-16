@@ -17,10 +17,10 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            if(!acceptTerms) {
-                showToast('Anda harus menyetujui Syarat dan Ketentuan serta Kebijakan Privasi ShoeCare.', 'error');
-                return;
-            }
+            // if(!acceptTerms) {
+            //     showToast('Anda harus menyetujui Syarat dan Ketentuan serta Kebijakan Privasi ShoeCare.', 'error');
+            //     return;
+            // }
 
             showSpinner("Sedang memproses...");
             const res = await fetch('/api/auth/login', {
@@ -73,11 +73,12 @@ const Login = () => {
             </div>
 
 
-            <label htmlFor="remember" className="flex items-center mb-5">
+            <button type="submit" onClick={handleLogin} className="text-white bg-blue-500 box-border border border-transparent hover:bg-brand-strong focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 w-full cursor-pointer focus:outline-none">Login</button>
+            
+            <label htmlFor="remember" className="flex items-center mb-5 invisible">
                 <input id="remember" type="checkbox" className="w-4 h-4 border border-default-medium rounded-xs bg-transparent focus:ring-2 focus:ring-brand-soft" required onChange={(e) => setAcceptTerms(e.target.checked)} />
                 <p className="ms-2 text-sm font-medium text-heading select-none">Saya menyetujui <a href="#" className="text-fg-brand hover:underline">Syarat dan Ketentuan</a> serta <a href="#" className="text-fg-brand hover:underline">Kebijakan Privasi</a> ShoeCare.</p>
             </label>
-            <button type="submit" onClick={handleLogin} className="text-white bg-blue-500 box-border border border-transparent hover:bg-brand-strong focus:ring-4 shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 w-full cursor-pointer focus:outline-none">Login</button>
         </form>
 
 

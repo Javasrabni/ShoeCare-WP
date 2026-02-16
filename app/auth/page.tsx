@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation';
 
 const Page = async () => {
     const user = await getUser();
-    if(user?.isGuest == false){
-        return redirect('/layanan');
+    const userId = user?._id.toString()
+    if(userId){
+        redirect('/layanan');
     }
     return (
         <div className='w-full h-[calc(100vh-200px)] flex items-center justify-center p-6'>

@@ -1,7 +1,7 @@
 import connectDB from "./mongodb";
 import { Users } from "@/app/models/users";
-import { NextResponse } from "next/server";
-import { redirect } from "next/navigation";
+// import { NextResponse } from "next/server";
+// import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 

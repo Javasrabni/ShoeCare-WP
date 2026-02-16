@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @plugin "flowbite/plugin";
 
+* {
+  box-sizing:border-box
+}
+
 @theme {
   /* Warna Brand (Biru) */
   --color-brand: #1d4ed8;
@@ -33,6 +37,12 @@
 
 body {
   font-family: 'Inter';
+}
+
+.fullscreen {
+  height: 100vh;
+  height: 100dvh;
+  height: 100svh;
 }
 
 /* DOT PULSE ANIMATE */

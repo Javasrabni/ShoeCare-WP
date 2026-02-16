@@ -9,7 +9,7 @@ const AuthClient = () => {
     const [formState, setFormState] = useState<boolean>(true);
 
     return (
-        <div className='flex flex-col gap-4 h-full py-16'>
+        <div className='flex flex-col gap-4 h-full py-1 sm:py-16'>
             <div className="relative bg-neutral-secondary-medium rounded-lg flex p-1 h-12 items-center">
                 {/* Elemen Sliding Background */}
                 <div
@@ -32,7 +32,7 @@ const AuthClient = () => {
                         }`}
                     onClick={() => setFormState(false)}
                 >
-                    Daftar akun member
+                    Daftar Member
                 </button>
             </div>
 
@@ -43,7 +43,7 @@ const AuthClient = () => {
 
             {/* Back button */}
             <Link href="/layanan" className='flex sm:hidden'>
-                <div className='fixed z-50 bottom-8 right-8  border border-default-medium px-4 py-1 rounded-lg flex items-center shadow-xs hover:bg-neutral-150 cursor-pointer text-body hover:text-heading'>
+                <div className='fixed z-50 bottom-8 right-8 bg-white border border-default-medium px-4 py-1 rounded-lg flex items-center shadow-xs hover:bg-neutral-150 cursor-pointer text-body hover:text-heading'>
                     <ArrowLeftIcon className="w-4 h-4 inline-block mr-2" size={16} />
                     <p className="text-sm cursor-pointer">Kembali</p>
                 </div>

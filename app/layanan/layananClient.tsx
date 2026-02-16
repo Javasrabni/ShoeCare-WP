@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/admin/sidebar/sidebar";
 import { Dashboard } from "@/components/asideMenu/dashboard/dashboard";
-import DaftarPesanan from "@/components/asideMenu/daftar_pesanan/daftarPesanan";
-import PesananSaya from "@/components/asideMenu/pesanan_saya/pesananSaya";
-import RiwayatTransaksi from "@/components/asideMenu/riwayat_transaksi/riwayatTransaksi";
+import PesananSaya from "@/app/layanan/pesanan-saya/pesananSaya";
+import LacakPesanan from "@/app/layanan/lacak-pesanan/lacakPesanan";
+
+import RiwayatTransaksi from "@/app/layanan/riwayat-transaksi/riwayatTransaksi";
 import clsx from "clsx";
 import { useSidebar } from "../context/sidebar/sidebarContext";
 
@@ -25,14 +26,11 @@ const LayananClient = (props: LayananType) => {
     }
 
     return (
-        <div className={clsx("px-6 md:px-16 py-8 md:ml-70 transition duration-300 ease-in-out", sidebarStatus && "ml-0 md:ml-70" )}>
+        <div className={clsx("px-6 md:px-16 py-8 md:ml-70 transition duration-300 ease-in-out", sidebarStatus && "ml-0 md:ml-70")}>
             <Sidebar onMenuClick={handleMenuClick} userRole={props.userRole} userId={props.userId} />
             <div>
                 {activeMenu.menu === "Dashboard" && (
-                    <Dashboard userRole={activeMenu.userRole} />
-                )}
-                {activeMenu.menu === "Daftar Pesanan" && (
-                    <DaftarPesanan />
+                    <Dashboard userRole={activeMenu.userRole} userId={props.userId} />
                 )}
                 {activeMenu.menu === "Pesanan Saya" && (
                     <PesananSaya />
@@ -40,6 +38,10 @@ const LayananClient = (props: LayananType) => {
                 {activeMenu.menu === "Riwayat Transaksi" && (
                     <RiwayatTransaksi />
                 )}
+                {activeMenu.menu === "Lacak Pesanan" && (
+                    <LacakPesanan />
+                )}
+          
             </div>
         </div>
     )

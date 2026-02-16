@@ -1,39 +1,24 @@
 "use client"
-
-import { redirect } from "next/navigation"
-import { getUser } from "@/lib/auth"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 interface DashboardProps {
-    userId?: string
+    userId: string | object
     userRole: string
 }
 
 export function Dashboard({ userId, userRole }: DashboardProps) {
-    // const router = useRouter()
-    // const [user, setUser] = useState(null)
+    const router = useRouter()
 
-    // useEffect(() => {
-    //     async function getData() {
-    //         try {
-    //             const userFromHelper = await getUser()
-    //             setUser(userFromHelper)
-
-    //             if (userFromHelper?.role === "admin") {
-    //                 return router.push('/admin/dashboard')
-    //             }
-    //         } catch (error) {
-    //             console.error(error)
-    //         }
-    //     }
-
-    //     getData()
-    // }, [])
+    useEffect(() => {
+        if (userRole === "admin") {
+            router.replace("/admin/dashboard")
+        }
+    }, [userRole, router])
 
     return (
         <div>
-            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Minima provident dolor esse magni odit voluptas, necessitatibus dolorum blanditiis repellendus, enim ullam quos? Nostrum ex atque reiciendis nesciunt optio. Sunt, reiciendis!</p>
+            <p>ini adalah dashboard untuk guest atau member</p>
         </div>
     )
 

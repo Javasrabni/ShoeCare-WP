@@ -71,7 +71,7 @@ const NavbarClient = (props: NavbarClientProps) => {
                     <h1 className="text-base sm:text-xl font-[poppins] font-semibold">ShoeCare</h1>
                 </div>
 
-                <div className={clsx("text-(--secondary) flex-row gap-3 items-center hidden", (userPath || adminPath) && "hidden md:flex")}>
+                {/* <div className={clsx("text-(--secondary) flex-row gap-3 items-center hidden", (userPath || adminPath) && "hidden md:flex")}>
                     {pathSegments.map((segment, idx) => {
                         // Buat label bisa diubah, contoh ubah dash jadi spasi, kapitalisasi
                         const label = segment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
@@ -84,10 +84,9 @@ const NavbarClient = (props: NavbarClientProps) => {
 
                         return (
                             <div key={href} className="flex items-center text-sm gap-3 select-none">
-                                {/* Jika bukan segment terakhir, jadikan link */}
                                 {!isLast ? (
-                                    <Link href={props.role === "admin" ? "/admin/dashboard" : '/layanan'} className="hover:underline">
-                                        <p>Home</p>
+                                    <Link href={props.role === "admin" ? "/admin" : '/layanan'} className="hover:underline">
+                                        <p></p>
                                     </Link>
                                 ) : (
                                     <p>{label}</p>
@@ -98,6 +97,9 @@ const NavbarClient = (props: NavbarClientProps) => {
                         )
                     })}
 
+                </div> */}
+                <div>
+                    <p></p>
                 </div>
 
                 <div>

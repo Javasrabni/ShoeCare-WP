@@ -1,5 +1,7 @@
+import "leaflet/dist/leaflet.css"
 import Sidebar from '@/components/admin/sidebar/sidebar';
 import { getUser } from '@/lib/auth';
+
 import clsx from 'clsx'
 
 export default async function AdminLayout({ children, }: { children: React.ReactNode }) {

@@ -38,12 +38,16 @@
 body {
   font-family: 'Inter';
 }
-
-.fullscreen {
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
+.leaflet-container {
+  z-index: 0 !important;
 }
+
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0 !important;
+}
+
 
 /* DOT PULSE ANIMATE */
 .dot-pulse {

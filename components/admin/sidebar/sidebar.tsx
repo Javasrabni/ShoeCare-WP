@@ -2,7 +2,7 @@
 
 // import Image from 'next/image'
 import { Dashboard } from '@/components/asideMenu/dashboard/dashboard';
-import { ClipboardCheckIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon } from 'lucide-react'
+import { ArchiveIcon, ClipboardCheckIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon } from 'lucide-react'
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -36,7 +36,8 @@ export const MenuListData: AdminMenuListType[] = [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/admin/dashboard" },
             { id: 2, label: 'Pesanan Masuk', icon: <ShoppingCartIcon size={20} />, path: "/admin/manajemen-order" },
             { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
-            { id: 4, label: 'Semua Ulasan', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
+            { id: 4, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
+            { id: 5, label: 'Inventori', icon: <ArchiveIcon size={20} />, path: "/admin/inventori" },
         ],
         memberUser: [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, },  // Dashbsoard untuk member

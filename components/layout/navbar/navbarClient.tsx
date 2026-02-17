@@ -30,22 +30,6 @@ const NavbarClient = (props: NavbarClientProps) => {
     const adminPath = pathname.startsWith('/admin')
     const authPath = pathname.startsWith('/auth')
 
-
-    // Menghindari konfilk z-index saat transisi opacity
-    const [navbarZ, setNavbarZ] = useState("z-30");
-    useEffect(() => {
-        if (sidebarStatus) {
-            setNavbarZ("-z-5");
-        } else {
-            const delay = setTimeout(() => {
-                setNavbarZ("z-30");
-            }, 530); // samakan dengan durasi transition overlay
-
-            return () => clearTimeout(delay);
-        }
-    }, [sidebarStatus]);
-
-
     return (
         <>
             {/* Open sidebar toggle */}
@@ -58,7 +42,7 @@ const NavbarClient = (props: NavbarClientProps) => {
                 </div>
             )}
 
-            <div id="navbarIndex" className={clsx(`sticky ${navbarZ} top-0 left-0 w-full h-22.5 flex items-center justify-between  bg-white border-b border-(--border) text-black `, sidebarStatus ? 'py-4 pr-6 sm:pr-8 pl-6 md:pl-78' : 'py-4 pr-6 sm:pr-8 pl-6 md:pl-8', (userPath || adminPath) && "md:pl-78")}>
+            <div id="navbarIndex" className={clsx(`sticky z-30 top-0 left-0 w-full h-22.5 flex items-center justify-between  bg-white border-b border-(--border) text-black `, sidebarStatus ? 'py-4 pr-6 sm:pr-8 pl-6 md:pl-78' : 'py-4 pr-6 sm:pr-8 pl-6 md:pl-8', (userPath || adminPath) && "md:pl-78")}>
 
 
 

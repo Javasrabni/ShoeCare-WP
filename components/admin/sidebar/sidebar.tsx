@@ -3,8 +3,8 @@
 // import Image from 'next/image'
 import { Dashboard } from '@/components/asideMenu/dashboard/dashboard';
 import { ArchiveIcon, ClipboardCheckIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon } from 'lucide-react'
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import { useSidebar } from '@/app/context/sidebar/sidebarContext';
 import { logout } from '@/lib/auth-client';
@@ -73,11 +73,14 @@ export const MenuListData: AdminMenuListType[] = [
 const Sidebar = (props: SidebarType) => {
     const { sidebarStatus, sidebarToggle } = useSidebar()
 
+    const pathname = usePathname()
     const router = useRouter()
     const menu = MenuListData[0]
     const staffInternal = MenuListData[0].staffInternal
     const support = MenuListData[0].support
     const manajemenPengguna = MenuListData[0].manajemenMember
+
+    const [indexSidebarMenu, setIndexSidebarMenu] = useState<number>(0)
 
     // Kelompokkan menu list berdasarkan admin
     const GetMenuItems = () => {
@@ -106,10 +109,10 @@ const Sidebar = (props: SidebarType) => {
 
     return (
         <>
-            <div id="overlay" className={`fixed top-0 right-0 w-full h-full bg-[#00000070] transition  ease-in-out ${sidebarStatus ? "z-35 opaciy-1 duration-500" : "-z-4 opacity-0 duration-700"}`} onClick={() => sidebarToggle(false)} />
+            <div id="overlay" className={`fixed top-0 right-0 w-full h-full bg-[#00000070] transition  ease-in-out ${sidebarStatus ? "z-35 flex" : " hidden "}`} onClick={() => sidebarToggle(false)} />
 
             <aside className={clsx(
-                "fixed left-0 top-0 h-full w-70 bg-white border-r border-(--border) z-40 transition-transform ",
+                "fixed left-0 top-0 h-full pb-8 w-70 bg-white border-r border-(--border) z-40 transition-transform ",
                 sidebarStatus ? "translate-x-0 duration-300" : "-translate-x-full duration-500",
                 "md:translate-x-0"
             )}>
@@ -123,7 +126,7 @@ const Sidebar = (props: SidebarType) => {
                 </div>
 
                 {/* Menu */}
-                <div className="p-5 flex w-full h-[calc(100vh-90px)] flex-col gap-4 overflow-y-auto">
+                <div className="p-5 flex w-full h-[calc(100vh-180px)] flex-col gap-4 overflow-y-auto">
                     <p className="text-sm text-(--secondary) font-[inter] select-none">
                         Menu {props.userRole == "customer" ? "member" : props.userRole || "Guest"}
                     </p>
@@ -132,7 +135,7 @@ const Sidebar = (props: SidebarType) => {
                     <div className="w-full">
                         {GetMenuItems().map((i, idx) =>
                             <ul key={idx}>
-                                <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black" onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
                             </ul>
                         )}
                     </div>
@@ -146,7 +149,7 @@ const Sidebar = (props: SidebarType) => {
                                 <div className='h-full'>
                                     {manajemenPengguna.map((i, idx) =>
                                         <ul key={idx}>
-                                            <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black" onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0">{i.icon} {i.label}</span></li>
+                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`}  onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0">{i.icon} {i.label}</span></li>
                                         </ul>
                                     )}
                                 </div>
@@ -158,7 +161,7 @@ const Sidebar = (props: SidebarType) => {
                                 <div className='h-full'>
                                     {staffInternal.map((i, idx) =>
                                         <ul key={idx}>
-                                            <li className="p-4 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black" onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`}  onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
                                         </ul>
                                     )}
                                 </div>

@@ -5,6 +5,18 @@
   box-sizing:border-box
 }
 
+.leaflet-control-attribution {
+  display: none !important;
+}
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0 !important;
+}
+.leaflet-container {
+  z-index: 0 !important;
+}
+
 @theme {
   /* Warna Brand (Biru) */
   --color-brand: #1d4ed8;

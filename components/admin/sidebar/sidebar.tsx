@@ -2,7 +2,7 @@
 
 // import Image from 'next/image'
 import { Dashboard } from '@/components/asideMenu/dashboard/dashboard';
-import { ArchiveIcon, ClipboardCheckIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon } from 'lucide-react'
+import { ArchiveIcon, ClipboardCheckIcon, FootprintsIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon} from 'lucide-react'
 import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -119,14 +119,14 @@ const Sidebar = (props: SidebarType) => {
                 {/* Logo */}
                 <div className='flex flex-row items-center justify-center gap-4 w-full h-22.5 shrink-0 border-b border-(--border)'>
                     <div className="bg-(--primary) size-fit px-2 py-1 text-white rounded-lg">
-                        <Layers3Icon size={24} />
+                        <FootprintsIcon size={24} />
                         {/* <Image /> */}
                     </div>
                     <h1 className="text-base sm:text-xl font-[poppins] font-semibold">ShoeCare</h1>
                 </div>
 
                 {/* Menu */}
-                <div className="p-5 flex w-full h-[calc(100vh-180px)] flex-col gap-4 overflow-y-auto">
+                <div className="p-5 flex w-full h-[calc(100vh-180px)] sm:h-[calc(100vh-90px)] flex-col gap-4 overflow-y-auto">
                     <p className="text-sm text-(--secondary) font-[inter] select-none">
                         Menu {props.userRole == "customer" ? "member" : props.userRole || "Guest"}
                     </p>

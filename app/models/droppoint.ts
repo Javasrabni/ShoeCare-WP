@@ -14,13 +14,13 @@ export const DropPointSchema = new mongoose.Schema({
             required: true
         }
     },
-    capacity: {type: Number, required: true},
+    capacity: {type: Number, required: false, default: 0},
     currentLoad: {type: Number, default: 0},
 
     status: {
         type: String,
-        enum: ['active', 'inactive'],
-        default: 'active'
+        enum: ['Aktif', 'Tidak aktif'],
+        default: 'Aktif'
     }
 
 }, {timestamps: true})

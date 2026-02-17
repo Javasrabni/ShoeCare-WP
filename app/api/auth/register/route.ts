@@ -22,9 +22,9 @@ export async function POST(request: Request) {
         { message: "Nama minimal 5 karakter" },
         { status: 400 }
       );
-    } 
+    }
 
-    if(name.length > 30) {
+    if (name.length > 30) {
       return NextResponse.json(
         { message: "Nama maksimal 20 karakter" },
         { status: 400 }
@@ -103,6 +103,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    console.log(phone);
+    console.log(normalizedPhone);
 
     // Validasi struktur nomor HP
     const phoneRegex = /^628[1-9][0-9]{6,10}$/;
@@ -114,9 +116,16 @@ export async function POST(request: Request) {
     }
 
     // checing apakah email atau phone sudah terdaftar
-    const checkUser = await Users.findOne({
-      $or: [{ email: normalizedEmail }, { phone: normalizedPhone }],
-    });
+    let checkUser;
+    if (normalizedEmail) {
+      checkUser = await Users.findOne({
+        $or: [{ email: normalizedEmail }, { phone: normalizedPhone }],
+      });
+    } else {
+      checkUser = await Users.findOne({ phone: normalizedPhone });
+    }
+
+    console.log(checkUser);
     if (checkUser) {
       return NextResponse.json(
         { message: "Email atau Nomor Telepon sudah terdaftar" },
@@ -127,15 +136,20 @@ export async function POST(request: Request) {
     // enkripsi password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // simpan user baru
-    await Users.create({
+    const userData: any = {
       name: name.toLowerCase(),
-      email: normalizedEmail,
       phone: normalizedPhone,
       password: hashedPassword,
       role: "customer",
       isGuest: false,
-    });
+    };
+
+    // hanya set email kalau benar-benar ada isinya
+    if (normalizedEmail && normalizedEmail.trim() !== "") {
+      userData.email = normalizedEmail.toLowerCase().trim();
+    }
+
+    await Users.create(userData);
 
     return NextResponse.json(
       { message: "Registrasi berhasil, silakan login!", success: true },

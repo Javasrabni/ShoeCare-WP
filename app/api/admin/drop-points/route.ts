@@ -1,3 +1,4 @@
+// app/api/admin/drop-points/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import { DropPoint } from "@/app/models/droppoint";
@@ -8,13 +9,8 @@ import { DropPoint } from "@/app/models/droppoint";
 export async function GET() {
   try {
     await connectDB();
-
     const dropPoints = await DropPoint.find().lean();
-
-    return NextResponse.json({
-      success: true,
-      data: dropPoints,
-    });
+    return NextResponse.json({ success: true, data: dropPoints });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -30,9 +26,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await connectDB();
-
     const body = await req.json();
-
     const {
       name,
       address,
@@ -46,7 +40,7 @@ export async function POST(req: Request) {
 
     if (typeof radiusMaxKM !== "number" || isNaN(radiusMaxKM)) {
       return NextResponse.json(
-        { success: false, message: "Max radius dan Charge harus number" },
+        { success: false, message: "Max radius harus number" },
         { status: 400 }
       );
     }
@@ -69,15 +63,42 @@ export async function POST(req: Request) {
       name,
       address,
       capacity,
-      location, // langsung pakai
+      location,
       adminDropPoint,
       radiusMaxKM,
       chargeOutsideRadius,
     });
 
+    return NextResponse.json({ success: true, data: dropPoint });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    );
+  }
+}
+
+/* =========================
+   DELETE MULTI DROP POINTS
+========================= */
+export async function DELETE(req: Request) {
+  try {
+    await connectDB();
+    const { ids } = await req.json();
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "IDs tidak valid" },
+        { status: 400 }
+      );
+    }
+
+    const result = await DropPoint.deleteMany({ _id: { $in: ids } });
+
     return NextResponse.json({
       success: true,
-      data: dropPoint,
+      message: `${result.deletedCount} drop point dihapus`,
     });
   } catch (error) {
     console.error(error);

@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import PilihLayananPage from "@/components/customer/pilih-layanan/pilihLayanan"
 
 interface DashboardProps {
     userId: string | object
@@ -18,7 +19,7 @@ export function Dashboard({ userId, userRole }: DashboardProps) {
 
     return (
         <div>
-            <p>ini adalah dashboard untuk guest atau member</p>
+            <PilihLayananPage />
         </div>
     )
 

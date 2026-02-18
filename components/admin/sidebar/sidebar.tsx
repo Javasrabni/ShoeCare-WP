@@ -2,7 +2,7 @@
 
 // import Image from 'next/image'
 import { Dashboard } from '@/components/asideMenu/dashboard/dashboard';
-import { ArchiveIcon, ClipboardCheckIcon, FootprintsIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon} from 'lucide-react'
+import { ArchiveIcon, ClipboardCheckIcon, FootprintsIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon, BrushCleaningIcon, StoreIcon } from 'lucide-react'
 import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -37,8 +37,9 @@ export const MenuListData: AdminMenuListType[] = [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/admin/dashboard" },
             { id: 2, label: 'Pesanan Masuk', icon: <ShoppingCartIcon size={20} />, path: "/admin/manajemen-order" },
             { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
-            { id: 4, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
-            { id: 5, label: 'Inventori', icon: <ArchiveIcon size={20} />, path: "/admin/inventori" },
+            { id: 4, label: 'Workshop', icon: <StoreIcon size={20} />, path: "/admin/workshop" },
+            { id: 5, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
+            { id: 6, label: 'Inventori', icon: <ArchiveIcon size={20} />, path: "/admin/inventori" },
         ],
         memberUser: [
             { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, },  // Dashbsoard untuk member
@@ -60,7 +61,7 @@ export const MenuListData: AdminMenuListType[] = [
             { id: 1, label: "Admin", icon: <UserStarIcon size={20} />, path: "/admin/staff-internal/admin" },
             { id: 2, label: "Dropper", icon: <PackageIcon size={20} />, path: "/admin/staff-internal/dropper" },
             { id: 3, label: "Courier", icon: <VanIcon size={20} />, path: "/admin/staff-internal/courier" },
-            { id: 4, label: "Technician", icon: <WrenchIcon size={20} />, path: "/admin/staff-internal/technician" },
+            { id: 4, label: "Technician", icon: <BrushCleaningIcon size={20} />, path: "/admin/staff-internal/technician" },
             { id: 5, label: "Quality Control (QC)", icon: <ClipboardCheckIcon size={20} />, path: "/admin/staff-internal/quality-control" },
         ],
         manajemenMember: [
@@ -150,7 +151,7 @@ const Sidebar = (props: SidebarType) => {
                                 <div className='h-full'>
                                     {manajemenPengguna.map((i, idx) =>
                                         <ul key={idx}>
-                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`}  onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0">{i.icon} {i.label}</span></li>
+                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0">{i.icon} {i.label}</span></li>
                                         </ul>
                                     )}
                                 </div>
@@ -162,7 +163,7 @@ const Sidebar = (props: SidebarType) => {
                                 <div className='h-full'>
                                     {staffInternal.map((i, idx) =>
                                         <ul key={idx}>
-                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`}  onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
                                         </ul>
                                     )}
                                 </div>

@@ -103,8 +103,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    console.log(phone);
-    console.log(normalizedPhone);
+    // console.log(phone);
+    // console.log(normalizedPhone);
 
     // Validasi struktur nomor HP
     const phoneRegex = /^628[1-9][0-9]{6,10}$/;
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
       checkUser = await Users.findOne({ phone: normalizedPhone });
     }
 
-    console.log(checkUser);
+    // console.log(checkUser);
     if (checkUser) {
       return NextResponse.json(
         { message: "Email atau Nomor Telepon sudah terdaftar" },

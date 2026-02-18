@@ -17,7 +17,7 @@ interface NavbarClientProps {
 
 const NavbarClient = (props: NavbarClientProps) => {
     const { sidebarStatus, sidebarToggle } = useSidebar()
-    console.log(sidebarStatus)
+    // console.log(sidebarStatus)
 
     const pathname = usePathname()  // contoh: "/admin/manajemen-order/detail"
     // Split path jadi array, filter agar kosong hilang
@@ -42,12 +42,12 @@ const NavbarClient = (props: NavbarClientProps) => {
                 </div>
             )}
 
-            <div id="navbarIndex" className={clsx(`sticky z-30 top-0 left-0 w-full h-22.5 flex items-center justify-between  bg-white border-b border-(--border) text-black `, sidebarStatus ? 'py-4 pr-6 sm:pr-8 pl-6 md:pl-78' : 'py-4 pr-6 sm:pr-8 pl-6 md:pl-8', (userPath || adminPath) && "md:pl-78")}>
+            <div id="navbarIndex" className={clsx(`sticky z-30 top-0 left-0 w-full h-22.5 flex items-center justify-between  bg-white border-b border-(--border) text-black `, sidebarStatus ? 'py-4 px-6 sm:px-6 md:pl-78' : 'py-4 px-6 sm:px-6 md:px-16', (userPath || adminPath) && "md:pl-78")}>
 
 
 
                 {/* Logo identity */}
-                <div className={clsx("flex flex-row items-center justify-center gap-4  h-22.5 pr-2 sm:pr-8", (userPath || adminPath) && "md:hidden")}>
+                <div className={clsx("flex flex-row items-center justify-center gap-4  h-22.5 px-2 sm:px-6", (userPath || adminPath) && "md:hidden")}>
                     <div className="bg-(--primary) size-fit px-2 py-1 text-white rounded-lg">
                         <FootprintsIcon size={24} />
                         {/* <Image /> */}

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import { DropPoint } from "@/app/models/droppoint";
 
@@ -45,6 +44,13 @@ export async function POST(req: Request) {
       status,
     } = body;
 
+    if (typeof radiusMaxKM !== "number" || isNaN(radiusMaxKM)) {
+      return NextResponse.json(
+        { success: false, message: "Max radius dan Charge harus number" },
+        { status: 400 }
+      );
+    }
+
     if (
       !name ||
       !address ||
@@ -55,16 +61,6 @@ export async function POST(req: Request) {
     ) {
       return NextResponse.json(
         { success: false, message: "Data tidak lengkap" },
-        { status: 400 }
-      );
-    }
-
-    if (
-      typeof radiusMaxKM !== "number" ||
-      typeof chargeOutsideRadius !== "number"
-    ) {
-      return NextResponse.json(
-        { success: false, message: "Max radius dan Charge harus number" },
         { status: 400 }
       );
     }

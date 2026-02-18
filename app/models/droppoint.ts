@@ -17,7 +17,7 @@ export const DropPointSchema = new mongoose.Schema(
     },
     capacity: { type: Number, required: false, default: 0 },
     currentLoad: { type: Number, default: 0 },
-    adminDropPOint: { type: String, required: true },
+    adminDropPoint: { type: String, required: true },
     radiusMaxKM: {type: Number, required:true, default: 0},
     chargeOutsideRadius: {type: Number, required: true, default: 0},
     status: {

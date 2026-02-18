@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
-
+import { useRouter } from "next/navigation"
 const Map = dynamic(() => import("./MapComponent"), {
     ssr: false,
 })
@@ -32,7 +32,7 @@ export default function AddDropPoint({ stateShowAddNewDP }: Props) {
     const { showToast } = useToast();
     const { showSpinner, hideSpinner } = useSpinner();
     // console.log(user._id)
-
+    const router = useRouter()
     // Default Jakarta
     const [lat, setLat] = useState(-6.1754)
     const [lng, setLng] = useState(106.8272)
@@ -51,8 +51,9 @@ export default function AddDropPoint({ stateShowAddNewDP }: Props) {
     const [radiusMaxKM, setRadiusMaxKM] = useState<number | null>(null)
     const [chargeOutsideRadius, setChargeOutsideRadius] = useState<number | null>(null)
 
+    const [alamatMap, setAlamatMap] = useState("")
     const handleSearch = async (value: string) => {
-        // setAddress(value)
+        setAlamatMap(value)
 
         if (value.length < 3) {
             setResults([])
@@ -104,6 +105,7 @@ export default function AddDropPoint({ stateShowAddNewDP }: Props) {
                 showToast(data.message, 'error')
                 return
             } else {
+                router.refresh()
                 stateShowAddNewDP(false)
                 hideSpinner()
             }
@@ -116,7 +118,6 @@ export default function AddDropPoint({ stateShowAddNewDP }: Props) {
 
     // GET ADMIN
     const [allAdmin, setAllAdmin] = useState<AdminType[] | null>(null)
-    console.log(allAdmin)
     useEffect(() => {
         async function getAdmin() {
             try {
@@ -152,10 +153,10 @@ export default function AddDropPoint({ stateShowAddNewDP }: Props) {
                 <div className="flex flex-col gap-4 w-full h-120 md:h-full relative">
                     <div className="">
                         <input type="text" placeholder="Cari alamat untuk titik maps"
-                            value={address}
+                            value={alamatMap}
                             onChange={(e) =>
                                 handleSearch(e.target.value)
-                            } className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required />
+                            } className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body"/>
                     </div>
 
 
@@ -211,7 +212,7 @@ export default function AddDropPoint({ stateShowAddNewDP }: Props) {
                         onChange={(e) => setRadiusMaxKM(Number(e.target.value))}
                         className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required />
                     <input
-                        placeholder="Charge jika diluar radius"
+                        placeholder="Charge jika di luar radius"
                         value={chargeOutsideRadius ?? ""}
                         type="number"
                         inputMode="numeric"

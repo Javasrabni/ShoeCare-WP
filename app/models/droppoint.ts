@@ -1,30 +1,36 @@
 import mongoose from "mongoose";
 
-export const DropPointSchema = new mongoose.Schema({
-    name: {type: String, required: true},
-    address: {type: String, required: true},
+export const DropPointSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    address: { type: String, required: true },
     location: {
-        type: {
-            type: String,
-            enum: ['Point'],
-            required: true
-        },
-        coordinates: {
-            type: [Number],
-            required: true
-        }
-    },
-    capacity: {type: Number, required: false, default: 0},
-    currentLoad: {type: Number, default: 0},
-
-    status: {
+      type: {
         type: String,
-        enum: ['Aktif', 'Tidak aktif'],
-        default: 'Aktif'
-    }
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
+    capacity: { type: Number, required: false, default: 0 },
+    currentLoad: { type: Number, default: 0 },
+    adminDropPOint: { type: String, required: true },
+    radiusMaxKM: {type: Number, required:true, default: 0},
+    chargeOutsideRadius: {type: Number, required: true, default: 0},
+    status: {
+      type: String,
+      enum: ["Aktif", "Tidak aktif"],
+      default: "Aktif",
+    },
+  },
+  { timestamps: true }
+);
 
-}, {timestamps: true})
+DropPointSchema.index({ location: "2dsphere" });
 
-DropPointSchema.index({location: "2dsphere"})
-
-export const DropPoint =  mongoose.models.DropPoint || mongoose.model('DropPoint', DropPointSchema, "DropPoint")
+export const DropPoint =
+  mongoose.models.DropPoint ||
+  mongoose.model("DropPoint", DropPointSchema, "DropPoint");

@@ -34,11 +34,37 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const { name, address, location, capacity, status } = body;
+    const {
+      name,
+      address,
+      location,
+      capacity,
+      adminDropPoint,
+      radiusMaxKM,
+      chargeOutsideRadius,
+      status,
+    } = body;
 
-    if (!name || !address || !location || !capacity) {
+    if (
+      !name ||
+      !address ||
+      !location ||
+      !adminDropPoint ||
+      !radiusMaxKM ||
+      !chargeOutsideRadius
+    ) {
       return NextResponse.json(
         { success: false, message: "Data tidak lengkap" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      typeof radiusMaxKM !== "number" ||
+      typeof chargeOutsideRadius !== "number"
+    ) {
+      return NextResponse.json(
+        { success: false, message: "Max radius dan Charge harus number" },
         { status: 400 }
       );
     }
@@ -47,8 +73,10 @@ export async function POST(req: Request) {
       name,
       address,
       capacity,
-      status,
       location, // langsung pakai
+      adminDropPoint,
+      radiusMaxKM,
+      chargeOutsideRadius,
     });
 
     return NextResponse.json({

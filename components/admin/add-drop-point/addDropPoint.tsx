@@ -1,19 +1,38 @@
 "use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 
 const Map = dynamic(() => import("./MapComponent"), {
     ssr: false,
 })
+import { useAuth } from "@/app/context/userAuth/getUserAuthData."
+import { useToast } from "@/app/context/toast/toastContext";
+import { useSpinner } from "@/app/context/spinner/spinnerContext";
+
+interface Props {
+    stateShowAddNewDP: (state: boolean) => void;
+}
 
 type SearchResult = {
     lat: string
     lon: string
     display_name: string
 }
+interface AdminType {
+    _id: string;
+    createdAt: string;
+    name: string;
+    role: string;
+    profilePhoto: string | null
+}
 
-export default function AddDropPoint() {
+export default function AddDropPoint({ stateShowAddNewDP }: Props) {
+    // Get User
+    const { user } = useAuth()
+    const { showToast } = useToast();
+    const { showSpinner, hideSpinner } = useSpinner();
+    // console.log(user._id)
+
     // Default Jakarta
     const [lat, setLat] = useState(-6.1754)
     const [lng, setLng] = useState(106.8272)
@@ -26,10 +45,14 @@ export default function AddDropPoint() {
     const [status, setStatus] =
         useState<"Aktif" | "Tidak aktif">("Aktif")
 
-    const [saving, setSaving] = useState(false)
+    const [alamatLengkap, setAlamatLengkap] = useState("")
+
+    const [adminDropPoint, setAdminDropPoint] = useState("")
+    const [radiusMaxKM, setRadiusMaxKM] = useState<number | null>(null)
+    const [chargeOutsideRadius, setChargeOutsideRadius] = useState<number | null>(null)
 
     const handleSearch = async (value: string) => {
-        setAddress(value)
+        // setAddress(value)
 
         if (value.length < 3) {
             setResults([])
@@ -54,30 +77,68 @@ export default function AddDropPoint() {
     }
 
     const handleSave = async () => {
-        setSaving(true)
+        try {
+            showSpinner("Sedang memproses...")
+            const res = await fetch("/api/admin/drop-points", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name,
+                    address: alamatLengkap,
+                    location: {
+                        type: "Point",
+                        coordinates: [lng, lat], // lng dulu!
+                    },
+                    capacity,
+                    currentLoad: 0,
+                    status,
 
-        await fetch("/api/admin/drop-points", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name,
-                address,
-                location: {
-                    type: "Point",
-                    coordinates: [lng, lat], // lng dulu!
-                },
-                capacity,
-                currentLoad: 0,
-                status,
-            }),
-        })
+                    adminDropPoint: adminDropPoint,
+                    radiusMaxKM,
+                    chargeOutsideRadius
+                }),
+            })
+            const data = await res.json()
 
-        setSaving(false)
-        alert("Berhasil disimpan")
+            if (!res.ok) {
+                showToast(data.message, 'error')
+                return
+            } else {
+                stateShowAddNewDP(false)
+                hideSpinner()
+            }
+        } catch (error) {
+            showToast("Terjadi kesalahan server", 'error')
+        } finally {
+            hideSpinner()
+        }
     }
 
+    // GET ADMIN
+    const [allAdmin, setAllAdmin] = useState<AdminType[] | null>(null)
+    console.log(allAdmin)
+    useEffect(() => {
+        async function getAdmin() {
+            try {
+                const res = await fetch("/api/admin/staff-internal", {
+                    credentials: "include",
+
+                })
+                const data = await res.json()
+                if (res.ok) {
+                    setAllAdmin(data.data)
+                }
+            } catch (error) {
+                console.error(error)
+            }
+
+        }
+        getAdmin()
+
+    }, [])
+
     return (
-        <div className="w-full flex flex-col h-full gap-4">
+        <div className="w-full flex flex-col h-full bg-white gap-4 z-28 pb-8">
 
             <div className="flex flex-row items-center justify-between">
                 <h1 className="text-xl font-semibold font-[poppins]">
@@ -125,7 +186,7 @@ export default function AddDropPoint() {
                     />
 
                     {/* INFO */}
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs md:invisible sm:text-sm text-gray-600">
                         Lat: {lat} | Lng: {lng}
                     </div>
                 </div>
@@ -139,59 +200,49 @@ export default function AddDropPoint() {
                         className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required />
                     <input
                         placeholder="Alamat lengkap drop point"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        value={alamatLengkap}
+                        onChange={(e) => setAlamatLengkap(e.target.value)}
+                        className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required />
+                    <input
+                        placeholder="Maksimal radius antar jemput (Radius KM)"
+                        value={radiusMaxKM ?? ""}
+                        type="number"
+                        inputMode="numeric"
+                        onChange={(e) => setRadiusMaxKM(Number(e.target.value))}
+                        className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required />
+                    <input
+                        placeholder="Charge jika diluar radius"
+                        value={chargeOutsideRadius ?? ""}
+                        type="number"
+                        inputMode="numeric"
+                        onChange={(e) => setChargeOutsideRadius(Number(e.target.value))}
                         className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body" required />
 
-                    {/* <input
-                        type="number"
-                        placeholder="Kapasitas drop point"
-                        value={capacity}
-                        onChange={(e) =>
-                            setCapacity(Number(e.target.value))
-                        }
-                        className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body" /> */}
 
-                    {/* <select
-                        value={status}
-                        onChange={(e) =>
-                            setStatus(
-                                e.target.value as "Aktif" | "Tidak aktif"
-                            )
-                        }
-                        className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                    >
-                        <option value="active">Active</option>
-                        <option value="inactive">
-                            Inactive
-                        </option>
-                    </select> */}
                     <select
-                        value={status}
-                        onChange={(e) =>
-                            setStatus(
-                                e.target.value as "Aktif" | "Tidak aktif"
-                            )
-                        }
+                        value={adminDropPoint}  // simpan ID, bukan name
+                        onChange={(e) => setAdminDropPoint(e.target.value)}
                         className="bg-transparent border border-default-medium text-heading text-sm rounded-base block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                     >
-                        <option value="active">Active</option>
-                        <option value="inactive">
-                            Inactive
-                        </option>
+                        <option value="" disabled>Admin drop point</option>
+                        {allAdmin?.map((adm) => (
+                            <option key={adm._id} className="capitalize" value={adm._id}>  {/* value = id */}
+                                {adm._id == user?._id ? `${adm.name} (Saya)` : adm.name}
+                            </option>
+                        ))}
                     </select>
 
                     <div className="w-full flex flex-row items-center gap-3">
-                        <button className="w-full bg-stone-200 text-black hover:bg-neutral-200 py-2.5 px-4 text-xs sm:text-sm rounded-xl font-semibold">
+
+                        <button className="w-full bg-(--muted) text-black hover:bg-neutral-200 py-2.5 px-4 text-xs sm:text-sm cursor-pointer rounded-lg font-semibold" onClick={() => stateShowAddNewDP(false)}>
                             Batal
                         </button>
 
                         <button
-                            disabled={!name || saving}
                             onClick={handleSave}
-                            className="w-full bg-(--primary) hover:bg-(--primary-hover) text-white py-2.5 px-4 text-xs sm:text-sm rounded-xl font-semibold"
+                            className="w-full cursor-pointer bg-(--primary) hover:bg-(--primary-hover) text-white py-2.5 px-4 text-xs sm:text-sm rounded-lg font-semibold"
                         >
-                            {saving ? "Menyimpan..." : "Simpan"}
+                            Simpan
                         </button>
                     </div>
 

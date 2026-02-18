@@ -107,6 +107,7 @@ const Sidebar = (props: SidebarType) => {
         router.refresh()
     }
 
+
     return (
         <>
             <div id="overlay" className={`fixed top-0 right-0 w-full h-full bg-[#00000070] transition  ease-in-out ${sidebarStatus ? "z-35 flex" : " hidden "}`} onClick={() => sidebarToggle(false)} />

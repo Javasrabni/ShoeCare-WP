@@ -14,6 +14,8 @@ import { PlusIcon, WarehouseIcon } from "lucide-react"
 import Table from "@/components/table/table"
 import AddDropPoint from "@/components/admin/add-drop-point/addDropPoint"
 
+
+
 type DropPointType = {
     _id: string
     name: string
@@ -46,12 +48,16 @@ export default function Page() {
         { id: 1, label: "Drop point", icon: <WarehouseIcon size={16} />, data: data.length }
     ]
 
+    const statusStateAddNewDP = (state: boolean) => {
+        setAddNewDropPoint(state)
+    }
+
     return (
         <>
             {addNewDropPoint && (
                 <div className="relative md:fixed flex items-center justify-center md:top-[50%] md:translate-y-[-50%] md:left-[50%] sm:px-12 md:px-16 md:translate-x-[-50%] w-full h-full">
                     <div className="relative md:ml-70 md:mt-24 w-full h-full md:h-[70%] md:p-8 bg-white rounded-2xl flex items-center justify-center md:z-200 ">
-                        <AddDropPoint />
+                        <AddDropPoint stateShowAddNewDP={statusStateAddNewDP} />
                     </div>
                     <div className="fixed hidden md:flex top-0 left-0 bg-[#00000070] w-full h-full z-190" onClick={() => setAddNewDropPoint(prev => !prev)} />
 

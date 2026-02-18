@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/navbar/navbar";
 import { ToastProvider } from "./context/toast/toastContext";
 import { SpinnerProvider } from "./context/spinner/spinnerContext";
 import { SidebarProvider } from "./context/sidebar/sidebarContext";
+import { AuthProvider } from "./context/userAuth/getUserAuthData.";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,14 +47,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} antialiased`}
       >
-        <ToastProvider>
-          <SpinnerProvider>
-            <SidebarProvider>
-              <Navbar />
-              {children}
-            </SidebarProvider>
-          </SpinnerProvider>
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <SpinnerProvider>
+              <SidebarProvider>
+                <Navbar />
+                {children}
+              </SidebarProvider>
+            </SpinnerProvider>
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

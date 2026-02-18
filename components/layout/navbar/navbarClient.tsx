@@ -35,7 +35,7 @@ const NavbarClient = (props: NavbarClientProps) => {
             {/* Open sidebar toggle */}
             {(userPath || adminPath) && (
 
-                <div className="flex fixed bottom-8 right-8 z-150 md:hidden bg-(--primary) text-white rounded-lg shadow-xs" onClick={() => sidebarToggle(prev => !prev)}>
+                <div className="flex fixed bottom-8 right-8 z-27 md:hidden bg-(--primary) text-white rounded-lg shadow-xs" onClick={() => sidebarToggle(prev => !prev)}>
                     <button className="size-10 sm:size-10 rounded-lg flex items-center justify-center cursor-pointer" >
                         <MenuIcon size={16} />
                     </button>

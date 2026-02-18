@@ -193,7 +193,7 @@ export default function AddDropPoint({ stateShowAddNewDP }: Props) {
                             setLat(coords[0])
                             setLng(coords[1])
                         }}
-                        fixedPin={false}
+                        // fixedPin={false}
                         interactive={true}
                         widthMap="w-full"
                         heightMap="h-full"

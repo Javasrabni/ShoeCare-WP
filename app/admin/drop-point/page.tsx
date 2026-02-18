@@ -168,7 +168,7 @@ export default function Page() {
                                 lng={previewMap.lng}
                                 radius={previewMap.radius}
                                 interactive={true}  // ✅ Non-interactive saat preview
-                                fixedPin={true}
+                                // fixedPin={true}
                                 // Hapus onChange prop atau set ke undefined
                                 widthMap="w-full"
                                 heightMap="h-full"

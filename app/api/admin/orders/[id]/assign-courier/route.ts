@@ -6,10 +6,14 @@ import { Users } from "@/app/models/users";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ← Ubah jadi Promise
 ) {
   try {
     await connectDB();
+    
+    // Await params terlebih dahulu
+    const { id } = await params;  // ← Tambahkan await
+    
     const { courierId } = await req.json();
 
     // Get courier info
@@ -22,7 +26,7 @@ export async function POST(
     }
 
     const order = await Order.findByIdAndUpdate(
-      params.id,
+      id,  // ← Gunakan id yang sudah di-await
       {
         status: "courier_assigned",
         "tracking.courierId": courierId,

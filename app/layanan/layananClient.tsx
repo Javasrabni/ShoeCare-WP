@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "@/components/admin/sidebar/sidebar";
 import { Dashboard } from "@/components/asideMenu/dashboard/dashboard";
 import PesananSaya from "@/app/layanan/pesanan-saya/pesananSaya";
-import LacakPesanan from "@/app/layanan/lacak-pesanan/lacakPesanan";
+import LacakPesanan from "@/app/layanan/lacak-pesanan/page";
 
 import RiwayatTransaksi from "@/app/layanan/riwayat-transaksi/riwayatTransaksi";
 import clsx from "clsx";

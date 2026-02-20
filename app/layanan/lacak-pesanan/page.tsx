@@ -1,11 +1,15 @@
 // app/layanan/lacak-pesanan/page.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { SearchIcon, PackageIcon } from "lucide-react"
 
-export default function LacakPesananPage() {
+// ⬇️ TAMBAHKAN INI
+export const dynamic = 'force-dynamic'
+
+// ⬇️ Pisahkan komponen yang pakai useSearchParams
+function LacakPesananContent() {
   const searchParams = useSearchParams()
   const initialPhone = searchParams.get("phone") || ""
   
@@ -190,5 +194,27 @@ export default function LacakPesananPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// ⬇️ Loading fallback
+function Loading() {
+  return (
+    <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="h-16 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  )
+}
+
+// ⬇️ Export dengan Suspense
+export default function LacakPesananPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <LacakPesananContent />
+    </Suspense>
   )
 }

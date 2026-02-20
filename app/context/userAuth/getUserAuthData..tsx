@@ -6,6 +6,10 @@ interface AuthType {
     _id: string;
     name: string;
     role: string;
+    phone: string;
+    email?: string;
+    isGuest?: boolean;
+    loyaltyPoints?: number;
 }
 
 interface AuthContextType {
@@ -15,7 +19,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
-    setUser: () => {}  // dummy function
+    setUser: () => {} 
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -24,7 +28,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         fetch("/api/me")
             .then((res) => res.json())
-            .then((data) => setUser(data)); 
+            .then((data) => {
+                if (data.success && data.user) {
+                    setUser(data.user);
+                }
+            })
+            .catch((err) => console.error("Auth error:", err)); 
     }, []);
 
     return (

@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import { Order } from "@/app/models/orders";
-import { getUser } from "@/lib/auth";
+import { getUser } from "@/lib/auth"; // ← Menggunakan auth Anda
 
 export async function POST(
   req: NextRequest,
@@ -10,10 +10,32 @@ export async function POST(
 ) {
   try {
     await connectDB();
-    const { id } = await params;
+    
+    // Cek autentikasi admin
     const admin = await getUser();
+    if (!admin || admin.role !== "admin") {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
 
+    const { id } = await params;
     const { items, reason } = await req.json();
+
+    if (!items || items.length === 0) {
+      return NextResponse.json(
+        { success: false, message: "Items tidak boleh kosong" },
+        { status: 400 }
+      );
+    }
+
+    if (!reason || reason.trim() === "") {
+      return NextResponse.json(
+        { success: false, message: "Alasan perubahan wajib diisi" },
+        { status: 400 }
+      );
+    }
 
     // Hitung ulang harga
     const newSubtotal = items.reduce(
@@ -41,10 +63,10 @@ export async function POST(
           (oldOrder.payment.deliveryFee || 0) -
           (oldOrder.payment.discountPoints || 0),
         editedAt: new Date(),
-        editedBy: admin?._id,
+        editedBy: admin._id,
         $push: {
           editHistory: {
-            editedBy: admin?._id,
+            editedBy: admin._id,
             editedAt: new Date(),
             changes: {
               items: oldOrder.items,
@@ -59,6 +81,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
+      message: "Order berhasil diupdate",
       data: updatedOrder,
     });
   } catch (error) {

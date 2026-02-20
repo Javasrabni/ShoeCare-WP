@@ -1,43 +1,58 @@
 // app/api/admin/orders/[id]/confirm/route.ts
 import { NextRequest, NextResponse } from "next/server"
-import  connectDB from "@/lib/mongodb"
+import connectDB from "@/lib/mongodb"
 import { Order } from "@/app/models/orders"
-import { getUser } from "@/lib/auth"
+import { getUser } from "@/lib/auth" // ← Menggunakan auth Anda
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }  // <-- params adalah Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB()
+    const { id } = await params
     
-    // Unwrap params dengan await
-    const { id } = await params  // <-- Tambahkan await
-    
+    // Cek autentikasi admin
     const admin = await getUser()
+    if (!admin || admin.role !== "admin") {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      )
+    }
 
-    const order = await Order.findByIdAndUpdate(
-      id,  // <-- Gunakan id yang sudah di-unwrap
-      {
-        status: "confirmed",
-        "adminActions.confirmedBy": admin?._id,
-        "adminActions.confirmedAt": new Date()
-      },
-      { 
-        new: true,  // <-- Masih bisa dipakai, atau ganti:
-        // returnDocument: 'after'  // <-- Alternatif untuk mongoose 8+
-      }
-    )
-
-    if (!order) {
+    // Cek order exists
+    const existingOrder = await Order.findById(id)
+    if (!existingOrder) {
       return NextResponse.json(
         { success: false, message: "Order tidak ditemukan" },
         { status: 404 }
       )
     }
 
+    // Validasi: hanya bisa confirm order dengan status pending/waiting_confirmation
+    if (!["pending", "waiting_confirmation"].includes(existingOrder.status)) {
+      return NextResponse.json(
+        { success: false, message: "Order tidak dapat dikonfirmasi" },
+        { status: 400 }
+      )
+    }
+
+    // Update order
+    const order = await Order.findByIdAndUpdate(
+      id,
+      {
+        status: "confirmed",
+        "adminActions.confirmedBy": admin._id,
+        "adminActions.confirmedAt": new Date(),
+        "payment.status": "paid"
+      },
+      { new: true }
+    )
+
     return NextResponse.json({
       success: true,
+      message: "Order berhasil dikonfirmasi",
       data: order
     })
 

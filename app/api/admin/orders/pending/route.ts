@@ -10,7 +10,7 @@ export async function GET() {
     const orders = await Order.find({ 
       status: { $in: ["pending", "waiting_confirmation"] } 
     })
-    .select("orderNumber customerInfo payment status createdAt") // Pastikan payment termasuk
+    .select("orderNumber customerInfo serviceType pickupLocation items payment status createdAt loyaltyPoints tracking") // ← Tambahkan field yang hilang
     .sort({ createdAt: -1 })
     .lean()
 

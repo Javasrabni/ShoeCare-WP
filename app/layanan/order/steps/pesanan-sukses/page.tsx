@@ -45,7 +45,7 @@ function PesananSuksesContent() {
 
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Pesanan Berhasil!</h1>
         <p className="text-gray-500 text-sm mb-6">
-          Pesanan Anda telah kami terima dan sedang diproses
+          Pesanan Anda telah kami terima dan pembayaran anda sedang kami konfirmasi.
         </p>
 
         {/* Order Number Card */}

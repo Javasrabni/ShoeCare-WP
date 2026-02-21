@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import {
   MapPinIcon, NavigationIcon, CheckCircle2Icon, CrosshairIcon,
-  ArrowLeftIcon, StoreIcon, SearchIcon, Loader2Icon
+  ArrowLeftIcon, StoreIcon, SearchIcon, Loader2Icon, CheckIcon
 } from "lucide-react"
 import { getOrderDraft, saveOrderDraft } from "@/lib/order-storage"
 

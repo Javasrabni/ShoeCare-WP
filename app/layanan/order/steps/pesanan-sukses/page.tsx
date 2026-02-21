@@ -28,16 +28,16 @@ function PesananSuksesContent() {
   }, [])
 
   // Auto-redirect saat countdown habis
-  useEffect(() => {
-    if (countdown === 0) {
-      router.push(`/layanan/lacak-pesanan?order=${orderNumber || ''}`)
-    }
-  }, [countdown, router, orderNumber])
+  // useEffect(() => {
+  //   if (countdown === 0) {
+  //     router.push(`/layanan/lacak-pesanan?order=${orderNumber || ''}`)
+  //   }
+  // }, [countdown, router, orderNumber])
 
   return (
-    <div className="max-w-2xl mx-auto min-h-screen flex flex-col pb-34">
+    <div className="relative pb-34 max-w-2xl mx-auto min-h-screen flex flex-col">
       {/* Header */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
         {/* Success Icon */}
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
           <CheckCircleIcon className="w-10 h-10 text-green-600" />
@@ -89,7 +89,7 @@ function PesananSuksesContent() {
                 <span className="text-xs font-bold text-blue-600">3</span>
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium text-gray-900">Notifikasi WhatsApp</p>
+                <p className="text-sm font-medium text-gray-900">Notifikasi</p>
                 <p className="text-xs text-gray-500">Anda akan menerima notifikasi saat kurir berangkat</p>
               </div>
             </div>
@@ -117,10 +117,10 @@ function PesananSuksesContent() {
       </div>
 
       {/* Bottom Actions */}
-      <div className="bg-white border-t border-gray-100 p-4 space-y-3">
+      <div className="left-[50%] translate-x-[-50%] px-6 py-6 bottom-0 fixed  bg-white border-t w-full border-gray-100 space-y-3">
         <Link
           href={`/layanan/lacak-pesanan?order=${orderNumber || ''}`}
-          className="flex items-center justify-center gap-2 w-full py-4 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 shadow-lg shadow-blue-200"
+          className="flex items-center justify-center gap-2 w-full max-w-2xl mx-auto py-4 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 shadow-lg shadow-blue-200"
         >
           Lacak Pesanan Saya
           <ArrowRightIcon className="w-5 h-5" />
@@ -130,7 +130,7 @@ function PesananSuksesContent() {
           href={`https://wa.me/6281234567890?text=Halo, saya sudah order ${orderNumber || ''}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-4 bg-white border border-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-50"
+          className="flex items-center max-w-2xl mx-auto justify-center gap-2 w-full py-4 bg-white border border-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-50"
         >
           <MessageCircleIcon className="w-5 h-5 text-green-600" />
           Hubungi Admin

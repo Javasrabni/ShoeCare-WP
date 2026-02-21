@@ -12,9 +12,9 @@ import {
 import { getOrderDraft, clearOrderDraft } from "@/lib/order-storage"
 
 const BANK_ACCOUNTS = [
-  { bank: "BCA", number: "1234567890", name: "PT ShoeCare Indonesia", color: "bg-blue-600" },
-  { bank: "Mandiri", number: "0987654321", name: "PT ShoeCare Indonesia", color: "bg-yellow-600" },
-  { bank: "BNI", number: "1122334455", name: "PT ShoeCare Indonesia", color: "bg-green-600" },
+  { bank: "BCA", number: "1234567890", name: "ShoeCare", color: "bg-blue-600" },
+  { bank: "Mandiri", number: "0987654321", name: "ShoeCare", color: "bg-yellow-600" },
+  { bank: "BNI", number: "1122334455", name: "ShoeCare", color: "bg-green-600" },
 ]
 
 export default function Step4Pembayaran() {

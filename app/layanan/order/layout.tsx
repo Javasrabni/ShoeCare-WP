@@ -77,7 +77,7 @@ export default function OrderLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-6 py-6">
         {children}
       </main>
 

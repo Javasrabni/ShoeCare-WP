@@ -17,7 +17,7 @@ export async function getUser() {
 
     await connectDB();
     const user = await Users.findById(payload.userId)
-      .select("_id name role email isGuest")
+      .select("_id name role email isGuest phone loyaltyPoints")
       .lean();
     if (!user) return null;
 

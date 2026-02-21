@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/navbar/navbar";
 import { ToastProvider } from "./context/toast/toastContext";
 import { SpinnerProvider } from "./context/spinner/spinnerContext";
-import { SidebarProvider } from "./context/sidebar/sidebarContext";
+import { SidebarProvider } from "./api/orders/sidebar/sidebarContext";
 import { AuthProvider } from "./context/userAuth/getUserAuthData.";
 
 const geistSans = Geist({

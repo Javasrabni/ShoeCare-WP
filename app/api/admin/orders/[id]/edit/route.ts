@@ -1,93 +1,92 @@
 // app/api/admin/orders/[id]/edit/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
 import { Order } from "@/app/models/orders";
-import { getUser } from "@/lib/auth"; // ← Menggunakan auth Anda
+import connectDB  from "@/lib/mongodb";
+import { getUser } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }  // ⬅️ FIX: params adalah Promise
 ) {
   try {
-    await connectDB();
+    // ⬅️ FIX: Unwrap params
+    const { id: orderId } = await params;
     
-    // Cek autentikasi admin
-    const admin = await getUser();
-    if (!admin || admin.role !== "admin") {
+    const user = await getUser();
+    if (!user || user.role !== "admin") {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const { id } = await params;
     const { items, reason } = await req.json();
 
-    if (!items || items.length === 0) {
+    if (!orderId) {
       return NextResponse.json(
-        { success: false, message: "Items tidak boleh kosong" },
+        { success: false, message: "Order ID required" },
         { status: 400 }
       );
     }
 
-    if (!reason || reason.trim() === "") {
+    await connectDB();
+
+    const order = await Order.findById(orderId);
+    if (!order) {
       return NextResponse.json(
-        { success: false, message: "Alasan perubahan wajib diisi" },
-        { status: 400 }
+        { success: false, message: "Order not found" },
+        { status: 404 }
       );
     }
+
+    // Simpan data lama untuk history
+    const oldItems = [...order.items];
 
     // Hitung ulang harga
     const newSubtotal = items.reduce(
       (sum: number, item: any) => sum + item.price * item.quantity,
       0
     );
-
-    // Ambil order lama untuk history
-    const oldOrder = await Order.findById(id);
-    if (!oldOrder) {
-      return NextResponse.json(
-        { success: false, message: "Order tidak ditemukan" },
-        { status: 404 }
-      );
-    }
+    const newFinalAmount = newSubtotal + order.pickupLocation.deliveryFee - order.payment.discountPoints;
 
     // Update order
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      {
-        items,
-        "payment.subtotal": newSubtotal,
-        "payment.finalAmount":
-          newSubtotal +
-          (oldOrder.payment.deliveryFee || 0) -
-          (oldOrder.payment.discountPoints || 0),
-        editedAt: new Date(),
-        editedBy: admin._id,
-        $push: {
-          editHistory: {
-            editedBy: admin._id,
-            editedAt: new Date(),
-            changes: {
-              items: oldOrder.items,
-              priceChanges: items,
-              reason,
-            },
-          },
-        },
-      },
-      { new: true }
-    );
+    order.items = items;
+    order.payment.subtotal = newSubtotal;
+    order.payment.finalAmount = newFinalAmount;
+    order.payment.amount = newFinalAmount + order.payment.discountPoints;
+
+    // Add edit history
+    order.editHistory.push({
+      editedBy: user._id,
+      editedAt: new Date(),
+      changes: {
+        items: oldItems,
+        priceChanges: items,
+        reason: reason
+      }
+    });
+
+    // Add status history
+    order.statusHistory.push({
+      status: order.status, // Status tetap, tapi ada perubahan
+      timestamp: new Date(),
+      updatedBy: user._id,
+      updatedByName: user.name,
+      notes: `Order diedit: ${reason}`,
+      location: null
+    });
+
+    await order.save();
 
     return NextResponse.json({
       success: true,
-      message: "Order berhasil diupdate",
-      data: updatedOrder,
+      data: order,
+      message: "Order edited successfully"
     });
   } catch (error) {
-    console.error("Edit error:", error);
+    console.error("Edit Order API Error:", error);
     return NextResponse.json(
-      { success: false, message: "Gagal edit order" },
+      { success: false, message: "Server error" },
       { status: 500 }
     );
   }

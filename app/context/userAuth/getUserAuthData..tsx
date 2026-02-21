@@ -15,15 +15,20 @@ interface AuthType {
 interface AuthContextType {
     user: AuthType | null;       
     setUser: Dispatch<SetStateAction<AuthType | null>>;
+    isAuthenticated: boolean;  // ⬅️ TAMBAHKAN INI
+    isLoading: boolean;        // ⬅️ TAMBAHKAN INI (optional tapi recommended)
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
-    setUser: () => {} 
+    setUser: () => {},
+    isAuthenticated: false,    // ⬅️ DEFAULT VALUE
+    isLoading: true            // ⬅️ DEFAULT VALUE
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<AuthType | null>(null); 
+    const [isLoading, setIsLoading] = useState(true);  // ⬅️ TAMBAHKAN
 
     useEffect(() => {
         fetch("/api/me")
@@ -33,11 +38,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     setUser(data.user);
                 }
             })
-            .catch((err) => console.error("Auth error:", err)); 
+            .catch((err) => console.error("Auth error:", err))
+            .finally(() => setIsLoading(false));  // ⬅️ SET LOADING FALSE
     }, []);
 
+    // ⬅️ DERIVED VALUE
+    const isAuthenticated = !!user;
+
     return (
-        <AuthContext.Provider value={{ user, setUser }}>
+        <AuthContext.Provider value={{ user, setUser, isAuthenticated, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

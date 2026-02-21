@@ -1,73 +1,87 @@
 // app/api/admin/orders/[id]/assign-courier/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
 import { Order } from "@/app/models/orders";
 import { Users } from "@/app/models/users";
-import { getUser } from "@/lib/auth"; // ← Menggunakan auth Anda
+import connectDB  from "@/lib/mongodb";
+import { getUser } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }  // ⬅️ FIX: params adalah Promise
 ) {
   try {
-    await connectDB();
+    // ⬅️ FIX: Unwrap params
+    const { id: orderId } = await params;
     
-    // Cek autentikasi admin
-    const admin = await getUser();
-    if (!admin || admin.role !== "admin") {
+    const user = await getUser();
+    if (!user || user.role !== "admin") {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const { id } = await params;
     const { courierId } = await req.json();
 
-    // Validasi order exists dan status sesuai
-    const order = await Order.findById(id);
-    if (!order) {
+    if (!orderId || !courierId) {
       return NextResponse.json(
-        { success: false, message: "Order tidak ditemukan" },
+        { success: false, message: "Order ID and Courier ID required" },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    // Get courier details
+    const courier = await Users.findById(courierId);
+    if (!courier || courier.role !== "courier") {
+      return NextResponse.json(
+        { success: false, message: "Courier not found" },
         { status: 404 }
       );
     }
 
-    if (order.status !== "confirmed") {
+    const order = await Order.findById(orderId);
+    if (!order) {
       return NextResponse.json(
-        { success: false, message: "Order belum dikonfirmasi" },
-        { status: 400 }
+        { success: false, message: "Order not found" },
+        { status: 404 }
       );
     }
 
-    // Get courier info
-    const courier = await Users.findById(courierId);
-    if (!courier || courier.role !== "courier") {
-      return NextResponse.json(
-        { success: false, message: "Kurir tidak valid" },
-        { status: 400 }
-      );
-    }
+    // Update order dengan kurir
+    order.status = "courier_assigned";
+    order.tracking.courierId = courierId;
+    order.tracking.courierName = courier.name;
+    
+    // Add to status history
+    order.statusHistory.push({
+      status: "courier_assigned",
+      timestamp: new Date(),
+      updatedBy: user._id,
+      updatedByName: user.name,
+      notes: `Kurir ${courier.name} ditugaskan`,
+      location: null
+    });
 
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      {
-        status: "courier_assigned",
-        "tracking.courierId": courierId,
-        "tracking.courierName": courier.name,
-      },
-      { new: true }
-    );
+    // Update tracking
+    order.tracking.currentStage = "courier_assigned";
+
+    // Update courier status
+    courier.courierInfo.isAvailable = false;
+    courier.courierInfo.currentDeliveryId = orderId;
+    await courier.save();
+    await order.save();
 
     return NextResponse.json({
       success: true,
-      message: "Kurir berhasil ditugaskan",
-      data: updatedOrder,
+      data: order,
+      message: "Courier assigned successfully"
     });
   } catch (error) {
-    console.error("Error assigning courier:", error);
+    console.error("Assign Courier API Error:", error);
     return NextResponse.json(
-      { success: false, message: "Gagal assign kurir" },
+      { success: false, message: "Server error" },
       { status: 500 }
     );
   }

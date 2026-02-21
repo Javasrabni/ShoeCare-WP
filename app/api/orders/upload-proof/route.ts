@@ -1,7 +1,8 @@
 // app/api/orders/upload-proof/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/mongodb";
 import { Order } from "@/app/models/orders";
+import connectDB from "@/lib/mongodb";
+import { getUser } from "@/lib/auth";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
@@ -12,60 +13,72 @@ cloudinary.config({
 
 export async function POST(req: NextRequest) {
   try {
-    await connectDB();
-    
+    const user = await getUser();
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const orderId = formData.get("orderId") as string;
 
     if (!file || !orderId) {
       return NextResponse.json(
-        { success: false, message: "File dan Order ID diperlukan" },
+        { success: false, message: "File and orderId required" },
         { status: 400 }
       );
     }
 
-    // Convert file to base64
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64File = `data:${file.type};base64,${buffer.toString("base64")}`;
+    await connectDB();
 
-    // Upload ke Cloudinary
-    const uploadResult = await cloudinary.uploader.upload(base64File, {
-      folder: "shoecare/payments",
-      public_id: `order_${orderId}_${Date.now()}`,
-    });
-
-    // Update order
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      {
-        "payment.proofImage": uploadResult.secure_url,
-        "payment.status": "waiting_confirmation",
-        status: "waiting_confirmation", // ← Update status order juga
-      },
-      { new: true }
-    );
-
+    const order = await Order.findById(orderId);
     if (!order) {
-      // Hapus gambar jika order tidak ditemukan
-      await cloudinary.uploader.destroy(uploadResult.public_id);
       return NextResponse.json(
-        { success: false, message: "Order tidak ditemukan" },
+        { success: false, message: "Order not found" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Bukti pembayaran berhasil diupload",
-      data: order
+    // Upload to Cloudinary
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+
+    const uploadResult = await cloudinary.uploader.upload(base64, {
+      folder: "shoecare/payments",
+      public_id: `payment_${orderId}_${Date.now()}`,
     });
 
+    const imageUrl = uploadResult.secure_url;
+
+    // Update order payment
+    order.payment.proofImage = imageUrl;
+    order.payment.status = "waiting_confirmation";
+    order.status = "waiting_confirmation";
+    
+    // ⬅️ TAMBAHKAN KE STATUS HISTORY
+    order.statusHistory.push({
+      status: "waiting_confirmation",
+      timestamp: new Date(),
+      updatedBy: user?._id || null,
+      updatedByName: user?.name || "Customer",
+      notes: "Bukti pembayaran diupload, menunggu konfirmasi admin",
+      location: null
+    });
+
+    // Update tracking current stage
+    order.tracking.currentStage = "waiting_confirmation";
+
+    await order.save();
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        imageUrl,
+        orderId,
+        status: "waiting_confirmation",
+      },
+    });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error("Upload Proof API Error:", error);
     return NextResponse.json(
-      { success: false, message: "Gagal upload bukti pembayaran" },
+      { success: false, message: "Server error" },
       { status: 500 }
     );
   }

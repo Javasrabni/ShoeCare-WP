@@ -1,66 +1,73 @@
 // app/api/admin/orders/[id]/confirm/route.ts
-import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/mongodb"
-import { Order } from "@/app/models/orders"
-import { getUser } from "@/lib/auth" // ← Menggunakan auth Anda
+import { NextRequest, NextResponse } from "next/server";
+import { Order } from "@/app/models/orders";
+import connectDB  from "@/lib/mongodb";
+import { getUser } from "@/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }  // ⬅️ FIX: params adalah Promise
 ) {
   try {
-    await connectDB()
-    const { id } = await params
+    // ⬅️ FIX: Unwrap params
+    const { id: orderId } = await params;
     
-    // Cek autentikasi admin
-    const admin = await getUser()
-    if (!admin || admin.role !== "admin") {
+    const user = await getUser();
+    if (!user || user.role !== "admin") {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
-      )
+      );
     }
 
-    // Cek order exists
-    const existingOrder = await Order.findById(id)
-    if (!existingOrder) {
+    if (!orderId) {
       return NextResponse.json(
-        { success: false, message: "Order tidak ditemukan" },
-        { status: 404 }
-      )
-    }
-
-    // Validasi: hanya bisa confirm order dengan status pending/waiting_confirmation
-    if (!["pending", "waiting_confirmation"].includes(existingOrder.status)) {
-      return NextResponse.json(
-        { success: false, message: "Order tidak dapat dikonfirmasi" },
+        { success: false, message: "Order ID required" },
         { status: 400 }
-      )
+      );
     }
 
-    // Update order
-    const order = await Order.findByIdAndUpdate(
-      id,
-      {
-        status: "confirmed",
-        "adminActions.confirmedBy": admin._id,
-        "adminActions.confirmedAt": new Date(),
-        "payment.status": "paid"
-      },
-      { new: true }
-    )
+    await connectDB();
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return NextResponse.json(
+        { success: false, message: "Order not found" },
+        { status: 404 }
+      );
+    }
+
+    // Update status ke confirmed
+    order.status = "confirmed";
+    order.payment.status = "paid";
+    order.payment.paidAt = new Date();
+    order.adminActions.confirmedBy = user._id;
+    order.adminActions.confirmedAt = new Date();
+
+    // Add to status history
+    order.statusHistory.push({
+      status: "confirmed",
+      timestamp: new Date(),
+      updatedBy: user._id,
+      updatedByName: user.name,
+      notes: "Pembayaran diverifikasi, order diterima",
+      location: null
+    });
+
+    order.tracking.currentStage = "confirmed";
+
+    await order.save();
 
     return NextResponse.json({
       success: true,
-      message: "Order berhasil dikonfirmasi",
-      data: order
-    })
-
+      data: order,
+      message: "Order confirmed successfully"
+    });
   } catch (error) {
-    console.error("Confirm error:", error)
+    console.error("Confirm Order API Error:", error);
     return NextResponse.json(
-      { success: false, message: "Gagal konfirmasi order" },
+      { success: false, message: "Server error" },
       { status: 500 }
-    )
+    );
   }
 }

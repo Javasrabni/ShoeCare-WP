@@ -6,7 +6,7 @@ import { ArchiveIcon, ClipboardCheckIcon, FootprintsIcon, HomeIcon, Layers3Icon,
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
-import { useSidebar } from '@/app/context/sidebar/sidebarContext';
+import { useSidebar } from '@/app/api/orders/sidebar/sidebarContext';
 import { logout } from '@/lib/auth-client';
 
 interface SidebarType {
@@ -35,14 +35,19 @@ interface AdminMenuListType {
 
 
 const Sidebar = (props: SidebarType) => {
-    // Tambah state untuk count pending orders
     const [pendingCount, setPendingCount] = useState(0);
+    const [processingCount, setProcessingCount] = useState(0); 
+
     // Fetch pending orders count
     useEffect(() => {
         if (props.userRole === "admin") {
             fetchPendingCount();
+            fetchProcessingCount();  // ⬅️ TAMBAHKAN INI
             // Polling setiap 30 detik
-            const interval = setInterval(fetchPendingCount, 30000);
+            const interval = setInterval(() => {
+                fetchPendingCount();
+                fetchProcessingCount();  // ⬅️ TAMBAHKAN INI
+            }, 30000);
             return () => clearInterval(interval);
         }
     }, [props.userRole]);
@@ -58,24 +63,54 @@ const Sidebar = (props: SidebarType) => {
             console.error("Failed to fetch pending count");
         }
     };
+
+    // ⬅️ TAMBAHKAN FUNGSI INI
+    const fetchProcessingCount = async () => {
+        try {
+            const res = await fetch("/api/admin/orders/need-processing/count");
+            const data = await res.json();
+            if (data.success) {
+                setProcessingCount(data.count);
+            }
+        } catch (error) {
+            console.error("Failed to fetch processing count");
+        }
+    };
+
     const MenuListData: AdminMenuListType[] = [
         {
             admin: [
                 { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/admin/dashboard" },
                 {
-                    id: 2, label: 'Pesanan Masuk', icon: <div className="relative">
+                    id: 2,
+                    label: 'Pesanan Masuk',
+                    icon: <div className="relative">
                         <ShoppingCartIcon size={20} />
                         {pendingCount > 0 && (
                             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                 {pendingCount > 9 ? '9+' : pendingCount}
                             </span>
                         )}
-                    </div>, path: "/admin/manajemen-order"
+                    </div>,
+                    path: "/admin/manajemen-order"
+                },
+                {
+                    id: 7, // ⬅️ BARU
+                    label: 'Perlu Diproses',
+                    icon: <div className="relative">
+                        <PackageIcon size={20} />
+                        {processingCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {processingCount > 9 ? '9+' : processingCount}
+                            </span>
+                        )}
+                    </div>,
+                    path: "/admin/perlu-diproses"
                 },
                 { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
                 { id: 4, label: 'Workshop', icon: <StoreIcon size={20} />, path: "/admin/workshop" },
-                { id: 5, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
-                { id: 6, label: 'Inventori', icon: <ArchiveIcon size={20} />, path: "/admin/inventori" },
+                { id: 5, label: 'History & Log', icon: <ScrollTextIcon size={20} />, path: "/admin/order-history" }, // ⬅️ BARU
+                { id: 6, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
             ],
             memberUser: [
                 { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, },  // Dashbsoard untuk member
@@ -174,7 +209,7 @@ const Sidebar = (props: SidebarType) => {
                     <div className="w-full">
                         {GetMenuItems().map((i, idx) =>
                             <ul key={idx}>
-                                <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                <li className={`p-4 text-(--secondary) font-[inter] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
                             </ul>
                         )}
                     </div>
@@ -188,7 +223,7 @@ const Sidebar = (props: SidebarType) => {
                                 <div className='h-full'>
                                     {manajemenPengguna.map((i, idx) =>
                                         <ul key={idx}>
-                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0">{i.icon} {i.label}</span></li>
+                                            <li className={`p-4 text-(--secondary) font-[inter] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0">{i.icon} {i.label}</span></li>
                                         </ul>
                                     )}
                                 </div>
@@ -200,7 +235,7 @@ const Sidebar = (props: SidebarType) => {
                                 <div className='h-full'>
                                     {staffInternal.map((i, idx) =>
                                         <ul key={idx}>
-                                            <li className={`p-4 text-(--secondary) font-[poppins] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                            <li className={`p-4 text-(--secondary) font-[inter] font-semibold text-xs sm:text-base rounded-lg cursor-pointer select-none hover:text-black ${pathname == i.path ? "bg-(--muted) text-black" : ''}`} onClick={() => { handleClickMenu(i.label, props.userRole, i.path); sidebarToggle(false) }}><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
                                         </ul>
                                     )}
                                 </div>
@@ -211,7 +246,7 @@ const Sidebar = (props: SidebarType) => {
                     <div className="border-t border-(--border) w-full pt-4">
                         {support.map((i, idx) =>
                             <ul key={idx} className="flex flex-col gap-2">
-                                <li className="px-4 py-2 hover:bg-(--muted) text-(--secondary) font-[poppins] font-semibold text-xs select-none sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
+                                <li className="px-4 py-2 hover:bg-(--muted) text-(--secondary) font-[inter] font-semibold text-xs select-none sm:text-base rounded-lg cursor-pointer hover:text-black"><span className="flex flex-row items-center gap-3 shrink-0" >{i.icon} {i.label}</span></li>
                             </ul>
                         )}
                     </div>
@@ -219,7 +254,7 @@ const Sidebar = (props: SidebarType) => {
                     {/* Logout */}
                     {props.userId && (
                         <div className="border-t border-(--border) pt-4 p-4 select-none cursor-pointer" onClick={handleLogout}>
-                            <span className="text-[tomato] flex flex-row gap-3 items-center"><LogOutIcon size={18} /> <p className="font-[poppins] font-semibold text-xs sm:text-base ">Logout</p></span>
+                            <span className="text-[tomato] flex flex-row gap-3 items-center"><LogOutIcon size={18} /> <p className="font-[inter] font-semibold text-xs sm:text-base ">Logout</p></span>
                         </div>
                     )}
                 </div>

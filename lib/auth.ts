@@ -16,8 +16,10 @@ export async function getUser() {
     };
 
     await connectDB();
-    const user = await Users.findById(payload.userId).select("_id name role email isGuest").lean();
-    if(!user) return null
+    const user = await Users.findById(payload.userId)
+      .select("_id name role email isGuest")
+      .lean();
+    if (!user) return null;
 
     return user;
   } catch (error) {
@@ -25,6 +27,13 @@ export async function getUser() {
     return null;
   }
 }
+// lib/auth.ts
+export async function getSession() {
+  const user = await getUser();
+  if (!user) return null;
+  return { user }; // ⬅️ Wrap dalam object
+}
+
 
 export async function Logout() {
   try {

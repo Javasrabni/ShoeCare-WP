@@ -6,7 +6,7 @@ import { MenuIcon, TrophyIcon, IdCardLanyardIcon, ChevronRightIcon, Layers3Icon,
 import Notification from "@/components/UI/navbar/notification/notification";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { useSidebar } from '@/app/context/sidebar/sidebarContext';
+import { useSidebar } from '@/app/api/orders/sidebar/sidebarContext';
 
 interface NavbarClientProps {
     guestUser: boolean; // !Guest = LoggedIn

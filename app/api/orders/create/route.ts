@@ -4,7 +4,6 @@ import connectDB from "@/lib/mongodb";
 import { Order } from "@/app/models/orders";
 import { Users } from "@/app/models/users";
 import { generateOrderNumber } from "@/lib/order-utils";
-// import { DropPoint } from "@/app/models/droppoint";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +16,7 @@ export async function POST(req: NextRequest) {
       pickupLocation,
       items,
       payment,
-      useLoyaltyPoints = 0, // Jumlah poin yang ingin digunakan
+      useLoyaltyPoints = 0,
     } = body;
 
     // Hitung subtotal
@@ -36,7 +35,13 @@ export async function POST(req: NextRequest) {
     // Generate nomor order
     const orderNumber = generateOrderNumber();
 
-    // Buat order
+    // ⬅️ TENTUKAN STATUS AWAL BERDASARKAN METODE PEMBAYARAN
+    const initialStatus = payment.method === "qris" ? "pending" : "waiting_confirmation";
+    const statusNotes = payment.method === "qris" 
+      ? "Menunggu pembayaran via QRIS" 
+      : "Menunggu upload bukti transfer";
+
+    // Buat order dengan statusHistory dan tracking
     const order = await Order.create({
       orderNumber,
       customerInfo,
@@ -45,18 +50,53 @@ export async function POST(req: NextRequest) {
       items,
       payment: {
         ...payment,
-        amount: finalAmount + discountPoints, // Total sebelum diskon
+        amount: finalAmount + discountPoints,
         subtotal,
         deliveryFee: pickupLocation.deliveryFee,
         discountPoints,
         finalAmount,
+        status: payment.method === "qris" ? "pending" : "waiting_confirmation",
       },
       loyaltyPoints: {
         earned: pointsEarned,
         used: discountPoints,
         rate: 0.01,
       },
-      status: "pending",
+      status: initialStatus,
+      
+      // ⬅️ INISIALISASI STATUS HISTORY (PENTING UNTUK TRACKING)
+      statusHistory: [
+        {
+          status: initialStatus,
+          timestamp: new Date(),
+          updatedBy: null,
+          updatedByName: customerInfo.isGuest ? "Guest" : "Customer",
+          notes: statusNotes,
+          location: null
+        }
+      ],
+      
+      // ⬅️ INISIALISASI TRACKING
+      tracking: {
+        courierId: null,
+        courierName: "",
+        pickupTime: null,
+        deliveryTime: null,
+        completedTime: null,
+        trackingDetails: [],
+        currentStage: initialStatus
+      },
+      
+      // ⬅️ INISIALISASI ADMIN ACTIONS
+      adminActions: {
+        confirmedBy: null,
+        confirmedAt: null,
+        notes: "",
+        cancellationReason: ""
+      },
+      
+      // ⬅️ INISIALISASI EDIT HISTORY
+      editHistory: []
     });
 
     // Jika user login (bukan guest), kurangi poin yang digunakan
@@ -71,6 +111,7 @@ export async function POST(req: NextRequest) {
       data: order,
     });
   } catch (error) {
+    console.error("Create Order Error:", error);
     return NextResponse.json(
       { success: false, message: "Gagal membuat order" },
       { status: 500 }

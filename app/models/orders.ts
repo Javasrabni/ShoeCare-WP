@@ -1,59 +1,69 @@
-// models/Order.ts
+// app/models/orders.ts (pastikan schema lengkap)
 import mongoose from "mongoose";
 
 const OrderItemSchema = new mongoose.Schema({
-  itemType: { type: String, required: true }, // "Sepatu", "Tas", dll
-  treatmentType: { type: String, required: true }, // "Deep Clean", "Repaint", dll
+  itemType: { type: String, required: true },
+  treatmentType: { type: String, required: true },
   quantity: { type: Number, default: 1 },
-  price: { type: Number, required: true }, // Harga per item
+  price: { type: Number, required: true },
   notes: { type: String, default: "" },
+});
+
+const StatusHistorySchema = new mongoose.Schema({
+  status: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  updatedBy: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "users",
+    default: null 
+  },
+  updatedByName: { type: String, default: "" },
+  notes: { type: String, default: "" },
+  location: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null }
+  }
+});
+
+const TrackingDetailSchema = new mongoose.Schema({
+  stage: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  proofImage: { type: String, default: null },
+  notes: { type: String, default: "" },
+  updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "users", default: null },
+  updatedByName: { type: String, default: "" },
+  location: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null }
+  }
 });
 
 const OrderSchema = new mongoose.Schema(
   {
-    // ====== IDENTIFIKASI ORDER ======
-    orderNumber: { type: String, unique: true, required: true }, // SC-20250219-XXXX
-
-    // ====== INFORMASI CUSTOMER ======
+    orderNumber: { type: String, unique: true, required: true },
     customerInfo: {
-      userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
-        default: null,
-      }, // null jika guest
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", default: null },
       name: { type: String, required: true },
-      phone: { type: String, required: true }, // Format: +628123456789
+      phone: { type: String, required: true },
       isGuest: { type: Boolean, default: true },
     },
-
-    // ====== LAYANAN ======
     serviceType: {
       type: String,
       enum: ["antar-jemput", "drop-point"],
       required: true,
     },
-
-    // ====== LOKASI (Khusus Antar-Jemput) ======
     pickupLocation: {
-      address: { type: String, default: "" }, // Alamat lengkap input manual
-      coordinates: {
-        lat: { type: Number, required: true },
-        lng: { type: Number, required: true },
+      address: { type: String, default: "" },
+      coordinates: { 
+        lat: { type: Number, required: true }, 
+        lng: { type: Number, required: true } 
       },
-      dropPointId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "DropPoint",
-        default: null,
-      },
+      dropPointId: { type: mongoose.Schema.Types.ObjectId, ref: "DropPoint", default: null },
       dropPointName: { type: String, default: "" },
       distanceKM: { type: Number, default: 0 },
-      deliveryFee: { type: Number, default: 0 }, // Ongkir
+      deliveryFee: { type: Number, default: 0 },
     },
-
-    // ====== ITEMS ======
     items: [OrderItemSchema],
-
-    // ====== PEMBAYARAN ======
     payment: {
       method: { type: String, enum: ["qris", "transfer"], required: true },
       status: {
@@ -61,65 +71,51 @@ const OrderSchema = new mongoose.Schema(
         enum: ["pending", "waiting_confirmation", "paid", "failed", "refunded"],
         default: "pending",
       },
-      amount: { type: Number, required: true }, // Total yang harus dibayar
-      subtotal: { type: Number, required: true }, // Total item (tanpa ongkir)
+      amount: { type: Number, required: true },
+      subtotal: { type: Number, required: true },
       deliveryFee: { type: Number, default: 0 },
-      discountPoints: { type: Number, default: 0 }, // Potongan dari poin loyalitas
-      finalAmount: { type: Number, required: true }, // Total setelah diskon
-
-      // Bukti pembayaran (untuk transfer)
+      discountPoints: { type: Number, default: 0 },
+      finalAmount: { type: Number, required: true },
       proofImage: { type: String, default: null },
       paidAt: { type: Date, default: null },
-
-      // QRIS data
-      qrisData: {
-        qrString: { type: String, default: null },
-        expiredAt: { type: Date, default: null },
+      qrisData: { 
+        qrString: { type: String, default: null }, 
+        expiredAt: { type: Date, default: null } 
       },
     },
-
-    // ====== STATUS ORDER ======
     status: {
       type: String,
       enum: [
-        "pending", // Menunggu konfirmasi admin
-        "confirmed", // Dikonfirmasi admin, cari kurir
-        "courier_assigned", // Kurir ditugaskan
-        "pickup_in_progress", // Kurir menuju lokasi
-        "picked_up", // Barang sudah diambil
-        "in_workshop", // Di workshop
-        "processing", // Sedang dikerjakan technician
-        "qc_check", // Quality Control
-        "ready_for_delivery", // Siap diantar/diambil
-        "delivery_in_progress", // Dalam pengantaran
-        "completed", // Selesai
-        "cancelled", // Dibatalkan
+        "pending",
+        "waiting_confirmation", // ⬅️ TAMBAHKAN STATUS INI
+        "confirmed",
+        "courier_assigned",
+        "pickup_in_progress",
+        "picked_up",
+        "in_workshop",
+        "processing",
+        "qc_check",
+        "ready_for_delivery",
+        "delivery_in_progress",
+        "completed",
+        "cancelled",
       ],
       default: "pending",
     },
-
-    // ====== TRACKING ======
+    statusHistory: [StatusHistorySchema],
     tracking: {
-      courierId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
-        default: null,
-      },
+      courierId: { type: mongoose.Schema.Types.ObjectId, ref: "users", default: null },
       courierName: { type: String, default: "" },
       pickupTime: { type: Date, default: null },
       deliveryTime: { type: Date, default: null },
       completedTime: { type: Date, default: null },
+      trackingDetails: [TrackingDetailSchema],
+      currentStage: { type: String, default: "" },
     },
-
-    // ====== ADMIN ACTIONS ======
     adminActions: {
-      confirmedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
-        default: null,
-      },
+      confirmedBy: { type: mongoose.Schema.Types.ObjectId, ref: "users", default: null },
       confirmedAt: { type: Date, default: null },
-      notes: { type: String, default: "" }, // Catatan admin
+      notes: { type: String, default: "" },
       cancellationReason: { type: String, default: "" },
     },
     editHistory: [
@@ -133,22 +129,13 @@ const OrderSchema = new mongoose.Schema(
         },
       },
     ],
-    editedAt: { type: Date, default: null },
-    editedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
-      default: null,
-    },
-
-    // ====== LOYALTY POINTS ======
     loyaltyPoints: {
-      earned: { type: Number, default: 0 }, // Poin didapat dari order ini
-      used: { type: Number, default: 0 }, // Poin digunakan (diskon)
-      rate: { type: Number, default: 0.01 }, // Rate: 1% dari subtotal
+      earned: { type: Number, default: 0 },
+      used: { type: Number, default: 0 },
+      rate: { type: Number, default: 0.01 },
     },
   },
   { timestamps: true }
 );
 
-export const Order =
-  mongoose.models.Order || mongoose.model("Order", OrderSchema, "Order");
+export const Order = mongoose.models.Order || mongoose.model("Order", OrderSchema, "Order");

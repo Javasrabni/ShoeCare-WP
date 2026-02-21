@@ -1,7 +1,6 @@
-// app/api/admin/orders/[id]/reject/route.ts
+// app/api/admin/orders/[id]/update-status/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { Order } from "@/app/models/orders";
-import { Users } from "@/app/models/users";
 import connectDB from "@/lib/mongodb";
 import { getUser } from "@/lib/auth";
 
@@ -10,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> } // ⬅️ FIX: params adalah Promise
 ) {
   try {
-    // ⬅️ FIX: Unwrap params
+    // ⬅️ FIX: Unwrap params dengan await
     const { id: orderId } = await params;
 
     const user = await getUser();
@@ -21,7 +20,7 @@ export async function POST(
       );
     }
 
-    const { reason } = await req.json();
+    const { status, notes, proofImage, location } = await req.json();
 
     if (!orderId) {
       return NextResponse.json(
@@ -40,41 +39,62 @@ export async function POST(
       );
     }
 
-    // Kembalikan poin loyalitas jika ada
-    if (order.loyaltyPoints?.used > 0 && order.customerInfo?.userId) {
-      await Users.findByIdAndUpdate(order.customerInfo.userId, {
-        $inc: { loyaltyPoints: order.loyaltyPoints.used },
-      });
-    }
-
     // Update status
-    order.status = "cancelled";
-    order.payment.status = "failed";
-    order.adminActions.cancellationReason = reason;
-    order.adminActions.confirmedBy = user._id;
-    order.adminActions.confirmedAt = new Date();
+    order.status = status;
 
     // Add to status history
     order.statusHistory.push({
-      status: "cancelled",
+      status,
       timestamp: new Date(),
       updatedBy: user._id,
       updatedByName: user.name,
-      notes: `Order dibatalkan: ${reason}`,
-      location: null,
+      notes: notes || "",
+      location: location || null,
     });
 
-    order.tracking.currentStage = "cancelled";
+    // Add to tracking details if it's a tracking stage
+    const trackingStages = [
+      "pickup_assigned",
+      "pickup_in_progress",
+      "picked_up",
+      "in_workshop",
+      "processing",
+      "qc_check",
+      "ready_for_delivery",
+      "delivery_assigned",
+      "delivery_in_progress",
+      "delivered",
+    ];
+
+    if (trackingStages.includes(status)) {
+      order.tracking.trackingDetails.push({
+        stage: status,
+        timestamp: new Date(),
+        proofImage: proofImage || null,
+        notes: notes || "",
+        updatedBy: user._id,
+        updatedByName: user.name,
+        location: location || null,
+      });
+      order.tracking.currentStage = status;
+    }
+
+    // Update timestamps based on status
+    if (status === "picked_up") {
+      order.tracking.pickupTime = new Date();
+    } else if (status === "completed") {
+      order.tracking.completedTime = new Date();
+    }
 
     await order.save();
 
     return NextResponse.json({
       success: true,
       data: order,
-      message: "Order rejected successfully",
+      message: "Status updated successfully",
     });
   } catch (error) {
-    console.error("Reject Order API Error:", error);
+    console.error("Update Status API Error:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

@@ -28,11 +28,11 @@ function PesananSuksesContent() {
   }, [])
 
   // Auto-redirect saat countdown habis
-  // useEffect(() => {
-  //   if (countdown === 0) {
-  //     router.push(`/layanan/lacak-pesanan?order=${orderNumber || ''}`)
-  //   }
-  // }, [countdown, router, orderNumber])
+  useEffect(() => {
+    if (countdown === 0) {
+      router.push(`/layanan/lacak-pesanan?order=${orderNumber || ''}`)
+    }
+  }, [countdown, router, orderNumber])
 
   return (
     <div className="relative pb-34 max-w-2xl mx-auto min-h-screen flex flex-col">

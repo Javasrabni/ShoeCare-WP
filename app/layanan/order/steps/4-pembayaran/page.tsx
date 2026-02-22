@@ -4,12 +4,13 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { 
-  ArrowLeftIcon, CheckIcon, CopyIcon, QrCodeIcon, BanknoteIcon, 
+import {
+  ArrowLeftIcon, CheckIcon, CopyIcon, QrCodeIcon, BanknoteIcon,
   ClockIcon, UploadIcon, Loader2Icon, CheckCircleIcon, HelpCircleIcon,
   ChevronRightIcon, ArrowRightIcon
 } from "lucide-react"
 import { getOrderDraft, clearOrderDraft } from "@/lib/order-storage"
+import { useAuth } from "@/app/context/userAuth/getUserAuthData."
 
 const BANK_ACCOUNTS = [
   { bank: "BCA", number: "1234567890", name: "ShoeCare", color: "bg-blue-600" },
@@ -18,17 +19,18 @@ const BANK_ACCOUNTS = [
 ]
 
 export default function Step4Pembayaran() {
+  const { isAuthenticated } = useAuth()
   const router = useRouter()
   const [draft, setDraft] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  
+
   const [creatingOrder, setCreatingOrder] = useState(false)
   const [createdOrder, setCreatedOrder] = useState<any>(null)
-  
+
   const [uploading, setUploading] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  
+
   const [timeLeft, setTimeLeft] = useState(3600) // 1 jam
 
   // Load draft
@@ -105,11 +107,16 @@ export default function Step4Pembayaran() {
       const data = await res.json()
       if (data.success) {
         setCreatedOrder(data.data)
-        localStorage.setItem("shoecare_pending_order", JSON.stringify({
-          orderId: data.data._id,
-          orderNumber: data.data.orderNumber,
-          phone: draft.customerInfo.phone
-        }))
+
+        // ✅ HANYA 1 KALI: Simpan ke localStorage untuk guest
+        if (!isAuthenticated) {
+          localStorage.setItem("shoecare_pending_order", JSON.stringify({
+            orderId: data.data._id,
+            orderNumber: data.data.orderNumber,
+            phone: draft.customerInfo.phone,
+            createdAt: new Date().toISOString()
+          }))
+        }
       } else {
         alert("Gagal: " + data.message)
       }
@@ -136,7 +143,8 @@ export default function Step4Pembayaran() {
       const data = await res.json()
       if (data.success) {
         clearOrderDraft()
-        localStorage.removeItem("shoecare_pending_order")
+        // HAPUS: localStorage.removeItem("shoecare_pending_order")
+        // Biarkan tetap ada untuk tracking
         router.push(`/layanan/order/steps/pesanan-sukses?order=${createdOrder.orderNumber}`)
       } else {
         alert("Gagal upload: " + data.message)
@@ -173,7 +181,7 @@ export default function Step4Pembayaran() {
         {/* Ringkasan Pesanan */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
           <h2 className="font-semibold text-gray-900">Ringkasan</h2>
-          
+
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Item</span>
@@ -331,7 +339,7 @@ export default function Step4Pembayaran() {
       {paymentMethod === "transfer" && (
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Transfer Bank</h3>
-          
+
           <div className="space-y-3">
             {BANK_ACCOUNTS.map((bank) => (
               <div key={bank.bank} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between">
@@ -361,7 +369,7 @@ export default function Step4Pembayaran() {
       {paymentMethod === "transfer" && (
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Upload Bukti Transfer</h3>
-          
+
           {previewUrl ? (
             <div className="relative w-full h-48 rounded-2xl overflow-hidden border-2 border-dashed border-blue-300">
               <Image src={previewUrl} alt="Preview" fill className="object-cover" />

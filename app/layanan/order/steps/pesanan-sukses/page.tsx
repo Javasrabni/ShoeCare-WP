@@ -14,18 +14,20 @@ function PesananSuksesContent() {
   const orderNumber = searchParams.get("order")
   const [countdown, setCountdown] = useState(20)
 
+  // Simpan ke localStorage saat mount (jika belum ada)
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
+    if (orderNumber && typeof window !== 'undefined') {
+      const existing = localStorage.getItem("shoecare_pending_order")
+      if (!existing) {
+        localStorage.setItem("shoecare_pending_order", JSON.stringify({
+          orderId: null, // Tidak tahu ID, hanya nomor
+          orderNumber: orderNumber,
+          phone: null,
+          createdAt: new Date().toISOString()
+        }))
+      }
+    }
+  }, [orderNumber])
 
   // Auto-redirect saat countdown habis
   useEffect(() => {

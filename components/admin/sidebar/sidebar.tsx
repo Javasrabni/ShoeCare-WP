@@ -36,7 +36,7 @@ interface AdminMenuListType {
 
 const Sidebar = (props: SidebarType) => {
     const [pendingCount, setPendingCount] = useState(0);
-    const [processingCount, setProcessingCount] = useState(0); 
+    const [processingCount, setProcessingCount] = useState(0);
 
     // Fetch pending orders count
     useEffect(() => {
@@ -95,7 +95,7 @@ const Sidebar = (props: SidebarType) => {
                     path: "/admin/manajemen-order"
                 },
                 {
-                    id: 7, // ⬅️ BARU
+                    id: 7,
                     label: 'Perlu Diproses',
                     icon: <div className="relative">
                         <PackageIcon size={20} />
@@ -109,21 +109,21 @@ const Sidebar = (props: SidebarType) => {
                 },
                 { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
                 { id: 4, label: 'Workshop', icon: <StoreIcon size={20} />, path: "/admin/workshop" },
-                { id: 5, label: 'History & Log', icon: <ScrollTextIcon size={20} />, path: "/admin/order-history" }, // ⬅️ BARU
+                { id: 5, label: 'History & Log', icon: <ScrollTextIcon size={20} />, path: "/admin/order-history" },
                 { id: 6, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
             ],
             memberUser: [
-                { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, },  // Dashbsoard untuk member
-                { id: 2, label: 'Pesanan Saya', icon: <ShoppingCartIcon size={20} />, },  // Menu untuk melihat pesanan
-                { id: 3, label: 'Lacak Pesanan', icon: <PackageSearchIcon size={20} /> },  // Opsi layanan
-
-                { id: 4, label: 'Riwayat Transaksi', icon: <ScrollTextIcon size={20} />, }, // Profil
+                { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/layanan" },  // ← TAMBAHKAN path
+                { id: 2, label: 'Pesanan Saya', icon: <ShoppingCartIcon size={20} />, path: "/layanan/lacak-pesanan" },  // ← TAMBAHKAN path
+                { id: 3, label: 'Lacak Pesanan', icon: <PackageSearchIcon size={20} />, path: "/layanan/lacak-pesanan" },  // ← TAMBAHKAN path
+                { id: 4, label: 'Riwayat Transaksi', icon: <ScrollTextIcon size={20} />, path: "/layanan/riwayat" },  // ← TAMBAHKAN path (sesuaikan)
             ],
             guestUser: [
-                { id: 1, label: 'Dashboard', icon: <HomeIcon size={20} />, },  // Menu utama untuk guest
-                { id: 2, label: 'Lacak Pesanan', icon: <PackageSearchIcon size={20} /> },  // Opsi layanan
-                { id: 3, label: 'Riwayat Transaksi', icon: <ScrollTextIcon size={20} />, }, // Profil
+                { id: 1, label: 'Dashboard', icon: <HomeIcon size={20} />, path: "/layanan" },  // ← TAMBAHKAN path
+                { id: 2, label: 'Lacak Pesanan', icon: <PackageSearchIcon size={20} />, path: "/layanan/lacak-pesanan" },  // ← TAMBAHKAN path
+                { id: 3, label: 'Riwayat Transaksi', icon: <ScrollTextIcon size={20} />, path: "/layanan/lacak-pesanan" },  // ← TAMBAHKAN path (guest pakai lacak juga)
             ],
+
             support: [
                 { id: 1, label: "Help center", },
                 { id: 2, label: "Settings", },

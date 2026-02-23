@@ -29,6 +29,7 @@ function LacakPesananContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { user, isAuthenticated } = useAuth()
+  console.log(isAuthenticated)
 
   const orderNumberFromUrl = searchParams.get("order")
 

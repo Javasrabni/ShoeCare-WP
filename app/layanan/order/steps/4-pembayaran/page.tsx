@@ -86,7 +86,7 @@ export default function Step4Pembayaran() {
           customerInfo: {
             name: draft.customerInfo.name,
             phone: draft.customerInfo.phone,
-            isGuest: true,
+            isGuest: isAuthenticated ? false : true,
             userId: null
           },
           serviceType: draft.serviceType,

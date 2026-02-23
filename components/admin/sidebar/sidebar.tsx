@@ -100,16 +100,16 @@ const Sidebar = (props: SidebarType) => {
                     icon: <div className="relative">
                         <PackageIcon size={20} />
                         {processingCount > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                 {processingCount > 9 ? '9+' : processingCount}
                             </span>
                         )}
                     </div>,
                     path: "/admin/perlu-diproses"
                 },
+                { id: 5, label: 'Status Pesanan & History', icon: <ScrollTextIcon size={20} />, path: "/admin/order-history" },
                 { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
                 { id: 4, label: 'Workshop', icon: <StoreIcon size={20} />, path: "/admin/workshop" },
-                { id: 5, label: 'History & Log', icon: <ScrollTextIcon size={20} />, path: "/admin/order-history" },
                 { id: 6, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
             ],
             memberUser: [

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    email: { type: String, unique: true }, // UNIQUE, required untuk login
+    email: { type: String }, // UNIQUE (sparse), required untuk login
     password: { type: String, required: true }, // Hashed dengan bcrypt/argon2
     phone: { type: String, unique: true, required: true }, // Format: +628123456789, UNIQUE
     name: { type: String, required: true }, // Nama lengkap user
@@ -72,7 +72,12 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true }, // Status aktif/non-aktif, default: true
     profilePhoto: { type: String, default: null }, // URL foto profil, default: null
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    indexes: [
+      { key: { email: 1 }, unique: true, sparse: true }
+    ]
+  }
 ); // Menambahkan createdAt dan updatedAt otomatis
 
 export const Users =

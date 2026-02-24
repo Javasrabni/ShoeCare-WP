@@ -1,14 +1,11 @@
-// app/api/admin/orders/need-processing/count/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { Order } from "@/app/models/orders";
+import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
+import { Order } from "@/app/models/orders";
 import { getUser } from "@/lib/auth";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const user = await getUser();
-
-    // ⬅️ FIX: Cek user.role langsung
     if (!user || user.role !== "admin") {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
@@ -18,13 +15,17 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const count = await Order.countDocuments({
-      status: { $in: ["confirmed", "courier_assigned"] },
+    const processingCount = await Order.countDocuments({
+      status: { $in: ["confirmed", "courier_assigned"] }
     });
 
-    return NextResponse.json({ success: true, count });
+    return NextResponse.json({
+      success: true,
+      count: processingCount
+    });
+
   } catch (error) {
-    console.error("Need Processing Count API Error:", error);
+    console.error("Processing Count API Error:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

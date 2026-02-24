@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:fix-email-index": "node lib/migrations/fix-email-index.js"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.4.2",

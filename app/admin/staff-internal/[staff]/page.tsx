@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation"
-import PuterAIChat from "../../dashboard/puter"
 type StaffProps = {
     params: Promise<{ staff: string }>
 }
@@ -15,9 +14,7 @@ export default async function Page({ params }: StaffProps) {
     return (
         <div>
             <p>{staff} Page</p>
-            <PuterAIChat
-                systemPrompt="Anda adalah customer service ShoeCare. Bantu jawab pertanyaan customer dengan ramah dan profesional dalam Bahasa Indonesia."
-            />
+       
         </div>
     )
 }

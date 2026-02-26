@@ -6,10 +6,12 @@ export default async function Home() {
   const user = await getUser()
   // console.log(user.role)
   if (user?.isGuest == false) {
-    if (user?.role !== "admin") {
-      return redirect('/layanan')
-    } else {
+    if (user?.role == "admin") {
       return redirect('/admin/dashboard')
+    } else if (user?.role == "courier") {
+      return redirect('/dashboard/kurir/queue')
+    } else {
+      return redirect('/layanan')
     }
   }
 

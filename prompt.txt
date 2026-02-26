@@ -1,0 +1,72 @@
+Saya sedang mengembangkan sistem ShoeCare (laundry sepatu) dengan Next.js + MongoDB. 
+Mohon ambilkan semua file berikut untuk analisis dan debugging:
+
+---
+
+### 🔴 PRIORITAS TINGGI - File yang Sedang Bermasalah/Baru
+
+1. **Backend API - Order Queue untuk Kurir**
+   - Path: `/app/api/courier/orders/queue/route.ts`
+   - Butuh: Kode lengkap GET handler untuk mengambil order dari courierQueue
+
+2. **Backend API - Assign Kurir dari Admin**
+   - Path: `/app/api/admin/orders/[id]/force-assign-courier/route.ts`
+   - Butuh: Kode lengkap POST handler untuk push kurir ke queue
+
+3. **Backend API - Need Processing Orders**
+   - Path: `/app/api/admin/orders/need-processing/route.ts`
+   - Butuh: Kode lengkap GET handler untuk admin lihat order yang perlu diproses
+
+4. **Frontend - Kurir Queue Page**
+   - Path: `/app/dashboard/kurir/queue/page.tsx`
+   - Butuh: Kode lengkap React component untuk tampilan antrian kurir
+
+5. **Frontend - Admin Need Processing Page**
+   - Path: `/app/admin/perlu-diproses/page.tsx` (atau `/app/admin/need-processing/page.tsx`)
+   - Butuh: Kode lengkap untuk admin assign kurir
+
+---
+
+### 🟡 PRIORITAS MENENGAH - Dashboard & Tracking
+
+6. **Admin Dashboard Page**
+   - Path: `/app/admin/dashboard/page.tsx`
+   - Butuh: Kode lengkap dengan stats cards, charts, top couriers
+
+7. **Admin Order History/Tracking Page**
+   - Path: `/app/admin/order-history/page.tsx`
+   - Butuh: Kode lengkap untuk monitoring order dengan timeline
+
+8. **Backend API - Dashboard Stats**
+   - Path: `/app/api/admin/dashboard/stats/route.ts`
+   - Butuh: Kode lengkap untuk aggregasi data dashboard
+
+---
+
+### 🟢 PRIORITAS RENDAH - Models & Utils
+
+9. **Order Model (Schema)**
+   - Path: `/app/models/orders.ts`
+   - Butuh: Schema lengkap Order dengan courierQueue, tracking, status history
+
+10. **User Model (Schema)**
+    - Path: `/app/models/users.ts`
+    - Butuh: Schema lengkap User dengan role courier, courierInfo
+
+11. **Auth Utility**
+    - Path: `/lib/auth.ts`
+    - Butuh: Fungsi getUser() untuk ekstrak data user dari session/token
+
+12. **Dashboard Utility**
+    - Path: `/lib/dashboard.ts`
+    - Butuh: Fungsi getDashboardStats() dan helper lainnya
+
+---
+
+### 📋 FORMAT OUTPUT
+
+Untuk setiap file, mohon berikan dalam format:
+
+```typescript
+// File: [path lengkap]
+[kode lengkap file tersebut]

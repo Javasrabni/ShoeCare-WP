@@ -68,10 +68,12 @@ export async function POST(request: Request) {
 
     user.lastLogin = new Date();
     await user.save();
-
+    
+    console.log(user.role)
     const res = NextResponse.json({
       user: { name: user.name, email: user.email, role: user.role },
     });
+
 
     res.cookies.set("token", token, {
       httpOnly: true,

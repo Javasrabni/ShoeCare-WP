@@ -1,4 +1,3 @@
-// app/admin/need-processing/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
@@ -18,25 +17,37 @@ import {
   ChevronRightIcon,
   MapPinnedIcon,
   PhoneCallIcon,
-  StoreIcon
+  StoreIcon,
+  AlertTriangleIcon
 } from "lucide-react"
 
 interface Order {
   _id: string
   orderNumber: string
   customerInfo: { name: string; phone: string }
-  pickupLocation: { address: string; dropPointName: string; coordinates: { lat: number; lng: number } }
+  pickupLocation: {
+    address: string;
+    dropPointName: string;
+    coordinates?: { lat: number; lng: number }
+  }
   status: string
+  courierQueue?: any[]
 }
 
 interface Courier {
   _id: string
   name: string
   phone: string
-  courierInfo: { vehicleType: string; vehicleNumber: string; currentLocation?: { lat: number; lng: number } }
+  courierInfo: {
+    vehicleType: string;
+    vehicleNumber: string;
+    currentLocation?: { lat: number; lng: number }
+  }
   distance: number | null
-  status: 'free' | 'busy'
+  status: string
   statusLabel: string
+  isActuallyBusy: boolean
+  activeOrder: { orderNumber: string; status: string } | null
 }
 
 export default function NeedProcessingPage() {
@@ -52,50 +63,96 @@ export default function NeedProcessingPage() {
   }, [])
 
   const fetchOrders = async () => {
-    const res = await fetch("/api/admin/orders/need-processing")
-    const data = await res.json()
-    if (data.success) setOrders(data.data)
+    try {
+      const res = await fetch("/api/admin/orders/need-processing?includeAssigned=true")
+      const data = await res.json()
+      if (data.success) {
+        setOrders(data.data)
+        console.log("Orders loaded:", data.data.length)
+      }
+    } catch (error) {
+      console.error("Fetch orders error:", error)
+    }
     setLoading(false)
   }
 
   const fetchCouriers = async (order: Order) => {
     setSelectedOrder(order)
     const params = new URLSearchParams()
-    if (order.pickupLocation.coordinates) {
+    if (order.pickupLocation?.coordinates) {
       params.append("lat", order.pickupLocation.coordinates.lat.toString())
       params.append("lng", order.pickupLocation.coordinates.lng.toString())
     }
 
-    const res = await fetch(`/api/admin/couriers/available?${params}`)
-    const data = await res.json()
-    if (data.success) setCouriers(data.data)
+    try {
+      const res = await fetch(`/api/admin/couriers/available?${params}`)
+      const data = await res.json()
+      if (data.success) {
+        setCouriers(data.data)
+        console.log("Couriers loaded:", data.data.length)
+      }
+    } catch (error) {
+      console.error("Fetch couriers error:", error)
+    }
   }
 
+  // ⬅️ FIX: Simpan orderId di state sebelum assign
+  const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null)
+
   const handleAssign = async (courierId: string) => {
-    if (!selectedOrder) return
+    if (!selectedOrder?._id) {
+      alert("Order tidak dipilih")
+      return
+    }
+
+    const orderId = selectedOrder._id
+    console.log("Assigning order:", orderId, "to courier:", courierId)
+
     setAssigning(courierId)
+    setAssigningOrderId(orderId)
 
-    const res = await fetch(`/api/admin/orders/${selectedOrder._id}/assign-courier`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ courierId })
-    })
-
-    if (res.ok) {
-      // Update status to pickup_in_progress
-      await fetch(`/api/admin/orders/${selectedOrder._id}/update-status`, {
+    try {
+      // 1. Assign kurir ke queue
+      const assignRes = await fetch(`/api/admin/orders/${orderId}/force-assign-courier`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: "pickup_in_progress",
-          notes: "Kurir menuju lokasi customer"
+          courierId,
+          notes: "Ditugaskan dari halaman perlu diproses"
         })
       })
 
-      fetchOrders()
+      const assignData = await assignRes.json()
+      console.log("Assign response:", assignData)
+
+      if (!assignData.success) {
+        alert(assignData.message || "Gagal assign kurir")
+        setAssigning(null)
+        return
+      }
+
+      // ✅ FIX: Hapus update status terpisah - sudah dihandle oleh force-assign-courier
+      // API force-assign-courier sudah mengubah status ke "courier_assigned"
+      // Tidak perlu call API terpisah lagi
+
+      // ✅ FIX: Tambahkan delay kecil untuk MongoDB replication (jika pakai Atlas)
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // ✅ FIX: Force refresh dengan timestamp untuk cache busting
+      await fetchOrders()
+
+      // Reset state
       setSelectedOrder(null)
+      setCouriers([])
+      alert("✅ Kurir berhasil ditugaskan ke antrian!")
+
+    } catch (error) {
+      console.error("Assign error:", error)
+      alert("Terjadi kesalahan saat assign kurir: " + (error as Error).message)
     }
+
     setAssigning(null)
+    setAssigningOrderId(null)
   }
 
   const filteredOrders = orders.filter(order =>
@@ -117,10 +174,10 @@ export default function NeedProcessingPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Header Section */}
+      {/* Header */}
       <div className="bg-white border-b border-gray-200 z-30">
-        <div className="max-w-7xl mx-auto py-5">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+        <div className="max-w-7xl mx-auto py-5 px-4 sm:px-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
                 <span>Orders</span>
@@ -133,8 +190,10 @@ export default function NeedProcessingPage() {
 
             <div className="flex items-center gap-3">
               <div className="bg-gray-100 px-4 py-2 rounded-xl flex items-center gap-2">
-                <span className="text-sm text-gray-600">Waiting Assignment</span>
-                <span className="bg-orange-500 text-white text-sm font-bold px-2.5 py-0.5 rounded-full">{orders.length}</span>
+                <span className="text-sm text-gray-600">Waiting</span>
+                <span className="bg-orange-500 text-white text-sm font-bold px-2.5 py-0.5 rounded-full">
+                  {orders.length}
+                </span>
               </div>
               <button
                 onClick={fetchOrders}
@@ -151,7 +210,7 @@ export default function NeedProcessingPage() {
               <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search order ID or customer name..."
+                placeholder="Cari order ID atau nama customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -162,9 +221,9 @@ export default function NeedProcessingPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto  py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Orders List - Left Side */}
+          {/* Orders List */}
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
               <PackageIcon className="w-4 h-4 text-blue-500" />
@@ -195,13 +254,22 @@ export default function NeedProcessingPage() {
                         <h3 className="font-bold text-lg text-gray-900 font-mono">
                           {order.orderNumber}
                         </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
-                            {order.status === 'confirmed' ? 'Belum Assign' : 'Assigned'}
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${order.status === 'confirmed'
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-blue-100 text-blue-700'
+                            }`}>
+                            {order.status === 'confirmed' ? 'Belum Assign' : order.status}
                           </span>
+                          {order.courierQueue && order.courierQueue.length > 0 && (
+                            <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                              {order.courierQueue.length} Kurir di Queue
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <ChevronRightIcon className={`w-5 h-5 text-gray-400 transition-transform ${selectedOrder?._id === order._id ? 'rotate-90 text-blue-500' : ''}`} />
+                      <ChevronRightIcon className={`w-5 h-5 text-gray-400 transition-transform ${selectedOrder?._id === order._id ? 'rotate-90 text-blue-500' : ''
+                        }`} />
                     </div>
 
                     <div className="space-y-3">
@@ -220,14 +288,17 @@ export default function NeedProcessingPage() {
                           <MapPinIcon className="w-4 h-4 text-gray-500" />
                         </div>
                         <div>
-                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{order.pickupLocation.address}</p>
-                          <p className="text-xs text-gray-400 mt-1">{order.pickupLocation.dropPointName}</p>
+                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
+                            {order.pickupLocation.address}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {order.pickupLocation.dropPointName}
+                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Action Hint */}
                   <div className={`px-5 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${selectedOrder?._id === order._id
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-50 text-gray-600'
@@ -249,29 +320,31 @@ export default function NeedProcessingPage() {
             )}
           </div>
 
-          {/* Courier Selection - Right Side */}
+          {/* Courier Selection */}
           <div className="lg:col-span-3">
             {selectedOrder ? (
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden sticky top-24">
-                {/* Header */}
                 <div className="p-6 border-b border-gray-100 bg-gray-50/50">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900">Tugaskan Kurir Terdekat</h2>
-                      <p className="text-sm text-gray-500 mt-1">Pilih kurir untuk order {selectedOrder.orderNumber}</p>
+                      <h2 className="text-lg font-bold text-gray-900">Tugaskan Kurir</h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Order: {selectedOrder.orderNumber}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        ID: {selectedOrder._id}
+                      </p>
                     </div>
                     <button
                       onClick={() => setSelectedOrder(null)}
                       className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
                     >
-                      <span className="sr-only">Close</span>
                       <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
 
-                  {/* Selected Order Summary */}
                   <div className="bg-white rounded-xl p-4 border border-gray-200">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -280,126 +353,107 @@ export default function NeedProcessingPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-semibold text-gray-900">{selectedOrder.customerInfo.name}</h3>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-sm text-gray-500">{selectedOrder.customerInfo.phone}</span>
                         </div>
                         <div className="flex items-start gap-2 text-sm text-gray-600">
                           <MapPinIcon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                           <span className="line-clamp-2">{selectedOrder.pickupLocation.address}</span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                          <StoreIcon className="w-3.5 h-3.5" />
-                          <span>Drop Point: {selectedOrder.pickupLocation.dropPointName}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Couriers List */}
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <TruckIcon className="w-4 h-4 text-blue-500" />
-                      Kurir Tersedia ({couriers.filter(c => c.status === 'free').length})
+                      Kurir Tersedia ({couriers.length})
                     </h3>
-                    <span className="text-xs text-gray-500">Diurutkan berdasarkan jarak</span>
                   </div>
 
                   <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
                     {couriers.length === 0 ? (
                       <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                         <TruckIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500 text-sm">Tidak ada kurir tersedia</p>
-                        <p className="text-gray-400 text-xs mt-1">Coba refresh atau cek kembali nanti</p>
+                        <p className="text-gray-500 text-sm">Tidak ada kurir</p>
                       </div>
                     ) : (
                       couriers.map((courier) => (
                         <div
                           key={courier._id}
-                          className={`relative p-5 rounded-xl border-2 transition-all ${courier.status === 'free'
-                              ? 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'
-                              : 'bg-gray-50 border-gray-100 opacity-60'
+                          className={`relative p-5 rounded-xl border-2 transition-all ${courier.isActuallyBusy
+                              ? 'bg-amber-50 border-amber-200'
+                              : 'bg-white border-gray-200 hover:border-blue-300'
                             }`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-4 flex-1">
-                              {/* Avatar */}
-                              <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${courier.status === 'free' ? 'bg-green-100' : 'bg-gray-200'
+                              <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${courier.isActuallyBusy ? 'bg-amber-100' : 'bg-green-100'
                                 }`}>
-                                <TruckIcon className={`w-7 h-7 ${courier.status === 'free' ? 'text-green-600' : 'text-gray-500'
+                                <TruckIcon className={`w-7 h-7 ${courier.isActuallyBusy ? 'text-amber-600' : 'text-green-600'
                                   }`} />
                               </div>
 
-                              {/* Info */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <h4 className="font-bold text-gray-900">{courier.name}</h4>
-                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${courier.status === 'free'
-                                      ? 'bg-green-100 text-green-700'
-                                      : 'bg-red-100 text-red-700'
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${courier.isActuallyBusy
+                                      ? 'bg-amber-100 text-amber-700'
+                                      : 'bg-green-100 text-green-700'
                                     }`}>
                                     {courier.statusLabel}
                                   </span>
                                 </div>
 
                                 <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-lg">
-                                      {courier.courierInfo.vehicleType === 'motorcycle' ? '🛵' : '🚗'}
+                                  <span className="text-lg">
+                                    {courier.courierInfo.vehicleType === 'motorcycle' ? '🛵' : '🚗'}
+                                  </span>
+                                  <span className="font-medium text-gray-700">
+                                    {courier.courierInfo.vehicleNumber}
+                                  </span>
+                                  {courier.distance !== null && (
+                                    <span className="text-blue-600 font-semibold">
+                                      {courier.distance} km
                                     </span>
-                                    <span className="font-medium text-gray-700">{courier.courierInfo.vehicleNumber}</span>
-                                  </div>
+                                  )}
                                 </div>
 
-                                {courier.distance !== null && (
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">
-                                      <NavigationIcon className="w-3.5 h-3.5" />
-                                      <span className="font-semibold">{courier.distance} km</span>
-                                      <span className="text-blue-400">•</span>
-                                      <span className="text-blue-500">dari lokasi pickup</span>
-                                    </div>
+                                {courier.isActuallyBusy && courier.activeOrder && (
+                                  <div className="mt-2 p-2 bg-amber-100 rounded-lg text-xs text-amber-800">
+                                    <p className="font-medium">
+                                      Sedang: {courier.activeOrder.orderNumber}
+                                    </p>
                                   </div>
                                 )}
                               </div>
                             </div>
 
-                            {/* Assign Button */}
-                            <div className="flex-shrink-0">
-                              {courier.status === 'free' ? (
-                                <button
-                                  onClick={() => handleAssign(courier._id)}
-                                  disabled={assigning === courier._id}
-                                  className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-sm shadow-blue-200"
-                                >
-                                  {assigning === courier._id ? (
-                                    <>
-                                      <Loader2Icon className="w-4 h-4 animate-spin" />
-                                      Assigning...
-                                    </>
-                                  ) : (
-                                    <>
-                                      Assign
-                                      <ArrowRightIcon className="w-4 h-4" />
-                                    </>
-                                  )}
-                                </button>
+                            <button
+                              onClick={() => handleAssign(courier._id)}
+                              disabled={assigning === courier._id}
+                              className={`px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 shadow-sm ${courier.isActuallyBusy
+                                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                } disabled:opacity-50`}
+                            >
+                              {assigning === courier._id ? (
+                                <>
+                                  <Loader2Icon className="w-4 h-4 animate-spin" />
+                                  Assigning...
+                                </>
                               ) : (
-                                <div className="px-4 py-2.5 bg-gray-100 text-gray-500 rounded-xl font-medium text-sm flex items-center gap-2">
-                                  <ClockIcon className="w-4 h-4" />
-                                  Busy
-                                </div>
+                                <>
+                                  {courier.isActuallyBusy ? (
+                                    <AlertTriangleIcon className="w-4 h-4" />
+                                  ) : (
+                                    <CheckIcon className="w-4 h-4" />
+                                  )}
+                                  {courier.isActuallyBusy ? 'Assign' : 'Assign'}
+                                </>
                               )}
-                            </div>
+                            </button>
                           </div>
-
-                          {/* Busy Indicator Bar */}
-                          {courier.status !== 'free' && (
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-b-xl">
-                              <div className="h-full bg-red-400 w-2/3 rounded-br-xl"></div>
-                            </div>
-                          )}
                         </div>
                       ))
                     )}
@@ -411,14 +465,12 @@ export default function NeedProcessingPage() {
                 <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
                   <MapPinnedIcon className="w-10 h-10 text-blue-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Pilih Order untuk Assign Kurir</h3>
-                <p className="text-gray-500 max-w-sm mx-auto mb-6">
-                  Klik salah satu order dari daftar di sebelah kiri untuk melihat kurir yang tersedia dan melakukan assignment
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Pilih Order untuk Assign Kurir
+                </h3>
+                <p className="text-gray-500 max-w-sm mx-auto">
+                  Klik order di sebelah kiri untuk melihat kurir yang tersedia
                 </p>
-                <div className="flex items-center justify-center gap-2 text-sm text-blue-600">
-                  <PackageIcon className="w-4 h-4" />
-                  <span>{orders.length} order menunggu assignment</span>
-                </div>
               </div>
             )}
           </div>

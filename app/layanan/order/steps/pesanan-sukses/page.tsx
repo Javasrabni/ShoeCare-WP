@@ -14,47 +14,77 @@ function PesananSuksesContent() {
   const orderNumber = searchParams.get("order")
   const [countdown, setCountdown] = useState(20)
 
-  // Simpan ke localStorage saat mount (jika belum ada)
+  // ⬅️ FIX: Simpan ke array, bukan single object
   useEffect(() => {
     if (orderNumber && typeof window !== 'undefined') {
-      const existing = localStorage.getItem("shoecare_pending_order")
-      if (!existing) {
-        localStorage.setItem("shoecare_pending_order", JSON.stringify({
+      // Ambil existing orders (array)
+      const existing = localStorage.getItem("shoecare_guest_orders")
+      let orders = []
+
+      if (existing) {
+        try {
+          orders = JSON.parse(existing)
+          // Convert old format ke array jika perlu
+          if (!Array.isArray(orders)) {
+            orders = [orders]
+          }
+        } catch (e) {
+          orders = []
+        }
+      }
+
+      // Cek duplikat berdasarkan orderNumber
+      const exists = orders.find((o: any) => o.orderNumber === orderNumber)
+
+      if (!exists) {
+        // Tambah order baru ke array
+        orders.push({
           orderId: null,
           orderNumber: orderNumber,
           phone: null,
           createdAt: new Date().toISOString()
-        }))
+        })
+
+        // Simpan array yang sudah diupdate
+        localStorage.setItem("shoecare_guest_orders", JSON.stringify(orders))
+        console.log("Order saved to guest orders:", orderNumber)
+      } else {
+        console.log("Order already exists:", orderNumber)
       }
+
+      // ⬅️ Tetap simpan single untuk backward compatibility (optional)
+      localStorage.setItem("shoecare_pending_order", JSON.stringify({
+        orderId: null,
+        orderNumber: orderNumber,
+        phone: null,
+        createdAt: new Date().toISOString()
+      }))
     }
   }, [orderNumber])
 
-  // Countdown timer yang benar
+  // Countdown timer
   useEffect(() => {
-    // Hanya jalankan jika countdown masih > 0
     if (countdown <= 0) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(timer); // Bersihkan interval saat mencapai 0
+          clearInterval(timer);
           return 0;
         }
         return prev - 1;
       });
-    }, 1000); // Update setiap 1 detik
+    }, 1000);
 
-    // Cleanup function untuk bersihkan interval saat unmount
     return () => clearInterval(timer);
-  }, [countdown]); // Dependency array dengan countdown
+  }, [countdown]);
 
-  // Auto-redirect saat countdown habis
+  // Auto-redirect
   useEffect(() => {
     if (countdown === 0) {
       router.push(`/layanan/lacak-pesanan?order=${orderNumber || ''}`)
     }
   }, [countdown, router, orderNumber])
-
   return (
     <div className="relative pb-34 max-w-2xl mx-auto min-h-screen flex flex-col">
       {/* Header */}

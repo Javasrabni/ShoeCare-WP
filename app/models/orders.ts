@@ -1,4 +1,3 @@
-// app/models/orders.ts (pastikan schema lengkap)
 import mongoose from "mongoose";
 
 const OrderItemSchema = new mongoose.Schema({
@@ -35,6 +34,61 @@ const TrackingDetailSchema = new mongoose.Schema({
   location: {
     lat: { type: Number, default: null },
     lng: { type: Number, default: null }
+  }
+});
+
+// ⬅️ SCHEMA BARU: Courier Queue
+const CourierQueueSchema = new mongoose.Schema({
+  courierId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "users", 
+    required: true 
+  },
+  assignedAt: { type: Date, default: Date.now },
+  status: { 
+    type: String, 
+    enum: ['pending', 'accepted', 'declined', 'expired', 'completed'],
+    default: 'pending'
+  },
+  assignedBy: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "users",
+    required: true 
+  },
+  notes: { type: String, default: "" },
+  acceptedAt: { type: Date, default: null },
+  completedAt: { type: Date, default: null }
+});
+
+// ⬅️ SCHEMA BARU: Active Courier
+const ActiveCourierSchema = new mongoose.Schema({
+  courierId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "users", 
+    required: true 
+  },
+  acceptedAt: { type: Date, default: Date.now },
+  startedPickupAt: { type: Date, default: null },
+  currentLocation: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
+    updatedAt: { type: Date, default: null }
+  }
+});
+
+// ⬅️ SCHEMA BARU: Pickup Proof
+const PickupProofSchema = new mongoose.Schema({
+  image: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+  notes: { type: String, default: "" },
+  location: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null }
+  },
+  uploadedBy: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "users",
+    required: true 
   }
 });
 
@@ -83,11 +137,17 @@ const OrderSchema = new mongoose.Schema(
         expiredAt: { type: Date, default: null } 
       },
     },
+    
+    // ⬅️ FIELD BARU UNTUK QUEUE SYSTEM
+    courierQueue: [CourierQueueSchema],
+    activeCourier: { type: ActiveCourierSchema, default: null },
+    pickupProof: { type: PickupProofSchema, default: null },
+    
     status: {
       type: String,
       enum: [
         "pending",
-        "waiting_confirmation", // ⬅️ TAMBAHKAN STATUS INI
+        "waiting_confirmation",
         "confirmed",
         "courier_assigned",
         "pickup_in_progress",
@@ -137,5 +197,10 @@ const OrderSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Index untuk performa query
+OrderSchema.index({ "courierQueue.courierId": 1, "courierQueue.status": 1 });
+OrderSchema.index({ "activeCourier.courierId": 1, status: 1 });
+OrderSchema.index({ status: 1, createdAt: -1 });
 
 export const Order = mongoose.models.Order || mongoose.model("Order", OrderSchema, "Order");

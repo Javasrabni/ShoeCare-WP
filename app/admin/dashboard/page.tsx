@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { formatRupiah } from "@/utils/formatRupiah";
 import { getDashboardStats } from "@/lib/dashboard";
-import PuterAIChat from "./puter";
 
 function StatsCard({ 
   title, 

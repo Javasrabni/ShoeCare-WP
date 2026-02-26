@@ -20,7 +20,7 @@ function PesananSuksesContent() {
       const existing = localStorage.getItem("shoecare_pending_order")
       if (!existing) {
         localStorage.setItem("shoecare_pending_order", JSON.stringify({
-          orderId: null, // Tidak tahu ID, hanya nomor
+          orderId: null,
           orderNumber: orderNumber,
           phone: null,
           createdAt: new Date().toISOString()
@@ -28,6 +28,25 @@ function PesananSuksesContent() {
       }
     }
   }, [orderNumber])
+
+  // Countdown timer yang benar
+  useEffect(() => {
+    // Hanya jalankan jika countdown masih > 0
+    if (countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer); // Bersihkan interval saat mencapai 0
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000); // Update setiap 1 detik
+
+    // Cleanup function untuk bersihkan interval saat unmount
+    return () => clearInterval(timer);
+  }, [countdown]); // Dependency array dengan countdown
 
   // Auto-redirect saat countdown habis
   useEffect(() => {

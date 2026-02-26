@@ -33,8 +33,8 @@ import {
   ChevronUpIcon,
   ArrowUpDownIcon,
   CopyIcon,
-  BanknoteIcon,
-  QrCodeIcon
+  QrCodeIcon,
+  BanknoteIcon
 } from "lucide-react"
 
 // ==================== TYPES ====================
@@ -346,7 +346,7 @@ function EditModal({
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 bg-blue-50/70 rounded-xl border border-blue-100">
                     <div>
-                      <p className="font-medium text-sm text-gray-800">{item.treatmentName}</p>
+                      <p className="font-medium text-sm text-gray-800 capitalize">{item.treatmentType.replaceAll('-', ' ')}</p>
                       <p className="text-xs text-gray-500 mt-0.5">@ Rp {item.price.toLocaleString("id-ID")}</p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -658,10 +658,10 @@ export default function ManajemenOrderPage() {
 
   const getSortLabel = (option: SortOption): string => {
     const labels: Record<SortOption, string> = {
-      newest: "Newest First",
-      oldest: "Oldest First",
-      highest: "Highest Amount",
-      lowest: "Lowest Amount"
+      newest: "Terbaru",
+      oldest: "Terlama",
+      highest: "Jumlah Tertinggi",
+      lowest: "Jumlah Terrendah"
     }
     return labels[option]
   }
@@ -681,8 +681,8 @@ export default function ManajemenOrderPage() {
     <div className="min-h-scree">
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-0 sm:px-6 py-5">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
             <div>
               <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
                 <span>Orders</span>
@@ -690,7 +690,7 @@ export default function ManajemenOrderPage() {
                 <span className="text-blue-600 font-medium">Incoming</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Pesanan Masuk</h1>
-              <p className="text-gray-500 text-sm mt-1">Manage and process your new shoe care service requests.</p>
+              <p className="text-gray-500 text-sm mt-1">Kelola dan proses permintaan layanan perawatan sepatu.</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -710,9 +710,9 @@ export default function ManajemenOrderPage() {
           {/* Filters */}
           <div className="flex flex-col gap-4 mt-6">
             {/* Filter Tabs - Scrollable on mobile */}
-            <div className="flex bg-gray-100 p-1 rounded-xl w-fit overflow-x-auto">
+            <div className="flex bg-gray-100 p-1 rounded-xl w-full md:w-fit overflow-x-auto">
               {[
-                { id: "all", label: "All Orders" },
+                { id: "all", label: "Semua pesanan" },
                 { id: "paid", label: "Paid" },
                 { id: "unpaid", label: "Unpaid" }
               ].map((filter) => (
@@ -720,8 +720,8 @@ export default function ManajemenOrderPage() {
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id as any)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeFilter === filter.id
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
                     }`}
                 >
                   {filter.label}
@@ -735,7 +735,7 @@ export default function ManajemenOrderPage() {
                 <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search order ID or name..."
+                  placeholder="Cari order ID atau nama..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -758,10 +758,10 @@ export default function ManajemenOrderPage() {
                 {showSortDropdown && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1">
                     {([
-                      { value: "newest", label: "Newest First" },
-                      { value: "oldest", label: "Oldest First" },
-                      { value: "highest", label: "Highest Amount" },
-                      { value: "lowest", label: "Lowest Amount" }
+                      { value: "newest", label: "Terbaru" },
+                      { value: "oldest", label: "Terlama" },
+                      { value: "highest", label: "Jumlah Tertinggi" },
+                      { value: "lowest", label: "Jumlah Terrendah" }
                     ] as { value: SortOption; label: string }[]).map((option) => (
                       <button
                         key={option.value}
@@ -784,9 +784,9 @@ export default function ManajemenOrderPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 py-6">
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-12 sm:py-20 bg-white rounded-2xl border border-gray-100">
+          <div className="text-center py-12 sm:py-20 bg-white ">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
               <PackageIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
             </div>
@@ -805,100 +805,249 @@ export default function ManajemenOrderPage() {
                 >
                   {/* Main Card Content - Mobile Optimized */}
                   <div className="p-4 sm:p-5">
-                    {/* Mobile Layout */}
-                    <div className="flex flex-col gap-4">
-                      {/* Top Row: Order Info */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <h3 className="font-bold text-base sm:text-lg text-gray-900 font-mono">
+                    {/* Row Layout - Compact & Horizontal */}
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+
+                      {/* Left: Order Info (flex-1) */}
+                      <div className="flex-1 min-w-0 flex items-start gap-4">
+                        {/* Icon/Avatar */}
+                        <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
+                          <PackageIcon className="w-6 h-6 text-blue-600" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          {/* Order Number & Badges */}
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h3 className="font-bold text-base font-mono text-gray-900 tracking-tight">
                               {order.orderNumber}
                             </h3>
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${order.payment.method === "qris"
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-green-100 text-green-700"
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${order.payment.method === "qris"
+                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
                               }`}>
-                              {order.payment.method === "qris" ? "QRIS" : "TRANSFER"}
+                              {order.payment.method === "qris" ? "QRIS" : "Transfer"}
                             </span>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                            <div className="flex items-center gap-1.5 text-gray-700">
-                              <UserIcon className="w-4 h-4 text-gray-400" />
-                              <span className="font-medium truncate">{order.customerInfo.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-gray-600">
-                              <PhoneIcon className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm">{order.customerInfo.phone}</span>
-                            </div>
-                          </div>
-
-                          {/* Badges Row */}
-                          <div className="flex flex-wrap items-center gap-2 mt-2">
                             {order.payment.proofImage ? (
-                              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                                <CheckIcon className="w-3 h-3" />
-                                PAID
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <CheckIcon className="w-3 h-3 mr-1" />
+                                Paid
                               </span>
-                            ) : order.payment.method === "transfer" ? (
-                              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                                PENDING
-                              </span>
-                            ) : null}
-                            {!order.customerInfo.isGuest && (
-                              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                                MEMBER
+                            ) : order.payment.method === "transfer" && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                <ClockIcon className="w-3 h-3 mr-1" />
+                                Pending
                               </span>
                             )}
                           </div>
-                        </div>
 
-                        {/* Price - Right Side */}
-                        <div className="text-right">
-                          <p className="text-xs text-gray-500 mb-1 hidden sm:block">Total Price</p>
-                          <p className="text-lg sm:text-xl font-bold text-gray-900">
+                          {/* Customer Info - Inline */}
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+                            <span className="flex items-center gap-1.5">
+                              <UserIcon className="w-3.5 h-3.5 text-gray-400" />
+                              <span className="font-medium text-gray-900">{order.customerInfo.name}</span>
+                              {!order.customerInfo.isGuest && (
+                                <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">Member</span>
+                              )}
+                            </span>
+                            <span className="flex items-center gap-1.5 font-mono text-gray-500">
+                              <PhoneIcon className="w-3.5 h-3.5 text-gray-400" />
+                              {order.customerInfo.phone}
+                            </span>
+                          </div>
+
+                          {/* Services Summary - Single Line */}
+                          {order.items && order.items.length > 0 && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs text-gray-400">Services:</span>
+                              <div className="flex items-center gap-1.5">
+                                {order.items.slice(0, 2).map((item, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-medium"
+                                  >
+                                    {item.quantity}× {item.treatmentType.replaceAll('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                  </span>
+                                ))}
+                                {order.items.length > 2 && (
+                                  <span className="text-xs text-gray-500">+{order.items.length - 2}</span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Middle: Price (lg:w-auto, align right on desktop) */}
+                      <div className="flex items-center justify-between lg:block lg:text-right lg:min-w-[140px]">
+                        <span className="text-sm text-gray-500 lg:hidden">Total</span>
+                        <div>
+                          <p className="text-xl font-bold text-gray-900 tracking-tight">
                             Rp {order.payment.finalAmount.toLocaleString("id-ID")}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {new Date(order.createdAt).toLocaleDateString("id-ID", {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
                           </p>
                         </div>
                       </div>
 
-                      {/* Action Buttons Row */}
-                      <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
+                      {/* Right: Actions (lg:border-l lg:pl-6) */}
+                      <div className="flex items-center gap-2 lg:border-l lg:border-gray-200 lg:pl-6">
+                        {/* WhatsApp */}
                         <a
-                          href={`https://wa.me/${order.customerInfo.phone}?text=${encodeURIComponent(`Halo ${order.customerInfo.name}, saya admin ShoeCare. Terkait order ${order.orderNumber}`)}`}
+                          href={`https://wa.me/${order.customerInfo.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                            `Halo ${order.customerInfo.name}, saya admin ShoeCare. Terkait order *${order.orderNumber}*.`
+                          )}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-xl hover:bg-green-600 font-medium transition-colors text-sm"
+                          className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#25D366] text-white hover:bg-[#22c35e] transition-colors shadow-sm"
+                          title="Hubungi WhatsApp"
                         >
-                          <MessageCircleIcon className="w-4 h-4" />
-                          <span className="hidden sm:inline">WhatsApp</span>
-                          <span className="sm:hidden">WA</span>
+                          <MessageCircleIcon className="w-5 h-5" />
                         </a>
 
+                        {/* Accept */}
                         <button
                           onClick={() => handleConfirm(order._id)}
                           disabled={isProcessing(order._id) || (order.payment.method === "transfer" && !order.payment.proofImage)}
-                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors text-sm"
+                          className="inline-flex items-center justify-center gap-2 px-4 h-10 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm transition-colors shadow-sm"
                         >
                           {isProcessing(order._id) ? (
                             <Loader2Icon className="w-4 h-4 animate-spin" />
                           ) : (
                             <CheckIcon className="w-4 h-4" />
                           )}
-                          Accept
+                          <span className="hidden sm:inline">Terima</span>
                         </button>
 
+                        {/* Reject */}
                         <button
                           onClick={() => openRejectModal(order)}
                           disabled={isProcessing(order._id)}
-                          className="px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors text-sm"
+                          className="inline-flex items-center justify-center w-10 h-10 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                          title="Tolak"
                         >
-                          Reject
+                          <XIcon className="w-5 h-5" />
                         </button>
+
+                        {/* Expand Detail */}
+                        {/* <button
+                          onClick={() => setExpandedOrder(isExpanded ? null : order._id)}
+                          className={`inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors ${isExpanded ? 'bg-gray-100 text-blue-600' : ''}`}
+                          title="Lihat Detail"
+                        >
+                          <ChevronDownIcon className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button> */}
                       </div>
                     </div>
-                  </div>
 
+                    {/* Expandable Detail - Full Width Below */}
+                    {isExpanded && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* Services Detail */}
+                          <div className="md:col-span-2 bg-gray-50 rounded-xl p-4">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                              <PackageIcon className="w-4 h-4 text-blue-500" />
+                              Detail Layanan
+                            </h4>
+                            <div className="space-y-2">
+                              {order.items?.map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0">
+                                  <div className="flex items-center gap-3">
+                                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                                      {item.quantity}
+                                    </span>
+                                    <span className="text-sm text-gray-800">
+                                      {item.treatmentType.replaceAll('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                    </span>
+                                  </div>
+                                  <span className="text-sm font-medium text-gray-900">
+                                    Rp {(item.price * item.quantity).toLocaleString("id-ID")}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => openEditModal(order)}
+                              className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                            >
+                              <PencilIcon className="w-3.5 h-3.5" />
+                              Edit Layanan
+                            </button>
+                          </div>
+
+                          {/* Payment & Location */}
+                          <div className="space-y-4">
+                            {/* Payment Proof */}
+                            {order.payment.proofImage && (
+                              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-sm font-semibold text-blue-900">Bukti Pembayaran</span>
+                                  <CheckIcon className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <div className="relative w-full h-24 rounded-lg overflow-hidden bg-white mb-2">
+                                  <Image
+                                    src={order.payment.proofImage}
+                                    alt="Bukti"
+                                    fill
+                                    className="object-cover"
+                                    unoptimized
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => setSelectedImage(order.payment.proofImage!)}
+                                  className="w-full py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-100 text-sm font-medium transition-colors"
+                                >
+                                  Lihat Full Size
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Location */}
+                            <div className="bg-gray-50 rounded-xl p-4">
+                              <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                                <MapPinIcon className="w-4 h-4" />
+                                <span>Alamat Penjemputan</span>
+                              </div>
+                              <p className="text-sm text-gray-800 font-medium">
+                                {order.pickupLocation?.address || "Tidak tersedia"}
+                              </p>
+                              {order.pickupLocation?.dropPointName && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                  Drop: {order.pickupLocation.dropPointName}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Courier Assignment */}
+                            {/* <div className="bg-gray-50 rounded-xl p-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Assign Kurir
+                              </label>
+                              <select
+                                onChange={(e) => handleAssignCourier(order._id, e.target.value)}
+                                disabled={isProcessing(order._id)}
+                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                defaultValue=""
+                              >
+                                <option value="" disabled>Pilih Kurir...</option>
+                                {couriers.map((c) => (
+                                  <option key={c._id} value={c._id}>
+                                    {c.name} • {c.courierInfo?.vehicleType === "motorcycle" ? "Motor" : "Mobil"}
+                                  </option>
+                                ))}
+                              </select>
+                            </div> */}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   {/* Expandable Details - Mobile Optimized */}
                   {isExpanded && (
                     <div className="border-t border-gray-100 bg-gray-50/50 px-4 sm:px-5 py-5">
@@ -915,7 +1064,7 @@ export default function ManajemenOrderPage() {
                                 order.items.map((item, idx) => (
                                   <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                                     <div>
-                                      <p className="font-medium text-sm text-gray-800">{item.treatmentName}</p>
+                                      <p className="font-medium text-sm text-gray-800 capitalize">{item.treatmentType.replaceAll('-', ' ')}</p>
                                       <p className="text-xs text-gray-500">{item.quantity} × Rp {item.price.toLocaleString("id-ID")}</p>
                                     </div>
                                     <p className="font-semibold text-gray-900 text-sm">
@@ -1023,7 +1172,7 @@ export default function ManajemenOrderPage() {
                           )}
 
                           {/* Courier Assignment */}
-                          <div className="bg-white rounded-xl p-4 border border-gray-200">
+                          {/* <div className="bg-white rounded-xl p-4 border border-gray-200">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Assign Kurir
                             </label>
@@ -1040,7 +1189,7 @@ export default function ManajemenOrderPage() {
                                 </option>
                               ))}
                             </select>
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>

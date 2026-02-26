@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { formatRupiah } from "@/utils/formatRupiah";
 import { getDashboardStats } from "@/lib/dashboard";
+import PuterAIChat from "./puter";
 
 function StatsCard({ 
   title, 
@@ -483,6 +484,7 @@ export default async function AdminDashboardPage() {
             </table>
           </div>
         </SectionCard>
+       
 
         {/* Recent Orders */}
         <SectionCard title="Pesanan Terbaru" icon={Clock} className="overflow-x-auto">

@@ -2,333 +2,318 @@ import connectDB from "@/lib/mongodb";
 import { Order } from "@/app/models/orders";
 import { Users } from "@/app/models/users";
 import { DropPoint } from "@/app/models/droppoint";
+import { cache } from "react";
 
-// Type definitions
-
-export interface CourierMetrics {
-  _id: string;
-  name: string;
-  deliveries: number;
-  totalRevenue: number;
-  rating: number;
-  onTimeRate: number;
-  avgDeliveryTime: number;
-  todayDeliveries: number;
-}
-
-export interface DashboardData {
-  counts: {
-    totalOrders: number;
-    totalCustomers: number;
-    totalCouriers: number;
-    totalDropPoints: number;
-    totalStaff: number;
-    pendingOrders: number;
-    processingOrders: number;
-  };
-  revenue: {
-    totalRevenue: number;
-    avgOrderValue: number;
-    totalOrders: number;
-  };
-  statusBreakdown: Array<{
-    status: string;
-    label: string;
-    count: number;
-    revenue: number;
-  }>;
-  paymentBreakdown: Array<{
-    status: string;
-    label: string;
-    count: number;
-    amount: number;
-  }>;
-  serviceBreakdown: Array<{
-    type: string;
-    label: string;
-    count: number;
-    revenue: number;
-  }>;
-  topCustomers: Array<{
-    name: string;
-    totalSpent: number;
-    orderCount: number;
-  }>;
-  topCouriers: Array<{
-    name: string;
-    deliveries: number;
-    totalRevenue: number;
-  }>;
-  dropPointUtilization: Array<{
-    name: string;
-    address: string;
-    capacity: number;
-    currentLoad: number;
-    utilizationRate: number;
-    status: string;
-  }>;
-  recentOrders: Array<{
-    orderNumber: string;
-    customer: string;
-    service: string;
-    status: string;
-    amount: number;
-    paymentStatus: string;
-    createdAt: Date;
-  }>;
-  monthlyRevenue: Array<{
-    month: string;
-    revenue: number;
-    orders: number;
-  }>;
-  todayStats: {
-    totalOrders: number;
-    revenue: number;
-    paidOrders: number;
-  };
-}
-export async function getTopCouriersWithMetrics(): Promise<CourierMetrics[]> {
+export const getDashboardStats = cache(async () => {
   await connectDB();
 
-  // Aggregate dengan lebih detail
-  const couriers = await Order.aggregate([
-    {
-      $match: {
-        status: "completed",
-        "tracking.courierId": { $ne: null },
-      },
-    },
-    {
-      $group: {
-        _id: "$tracking.courierId",
-        name: { $first: "$tracking.courierName" },
-        deliveries: { $sum: 1 },
-        totalRevenue: { $sum: "$payment.finalAmount" },
-        avgDeliveryTime: {
-          $avg: {
-            $subtract: ["$tracking.completedTime", "$tracking.pickupTime"],
-          },
-        },
-        ratings: { $avg: "$rating" }, // Jika ada field rating
-      },
-    },
-    { $sort: { deliveries: -1 } },
-    { $limit: 5 },
-  ]);
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-  // Enrich dengan data real-time dari Users collection
-  const enriched = await Promise.all(
-    couriers.map(async (c) => {
-      const user = await Users.findById(c._id).select("courierInfo").lean();
-      return {
-        _id: c._id.toString(),
-        name: c.name,
-        deliveries: c.deliveries,
-        totalRevenue: c.totalRevenue,
-        rating: Math.round((c.ratings || 4.5) * 10) / 10,
-        onTimeRate: 95 + Math.random() * 5, // Simulate atau hitung dari data
-        avgDeliveryTime: Math.round(c.avgDeliveryTime / (1000 * 60)), // Convert to minutes
-        todayDeliveries: user?.courierInfo?.todayDeliveries || 0,
-      };
-    })
-  );
-
-  return enriched;
-}
-
-export async function getDashboardStats(): Promise<DashboardData> {
-  await connectDB();
-
-  // ====== TOTAL COUNTS ======
-  const totalOrders = await Order.countDocuments();
-  const totalCustomers = await Users.countDocuments({ role: "customer" });
-  const totalCouriers = await Users.countDocuments({ role: "courier" });
-  const totalDropPoints = await DropPoint.countDocuments({ status: "Aktif" });
-  const totalStaff = await Users.countDocuments({
-    role: { $in: ["admin", "dropper", "technician", "qc"] },
-  });
-
-  // ====== ORDER STATUS BREAKDOWN ======
-  const statusBreakdown = await Order.aggregate([
-    {
-      $group: {
-        _id: "$status",
-        count: { $sum: 1 },
-        totalRevenue: { $sum: "$payment.finalAmount" },
+  const [
+    totalOrders,
+    todayOrdersCount,
+    pendingOrdersCount,
+    processingOrdersCount,
+    completedOrdersCount,
+    cancelledOrdersCount,
+    totalCustomers,
+    newCustomersThisMonth,
+    returningCustomers,
+    totalCouriers,
+    activeCouriersCount,
+    totalDropPoints,
+    dropPointsNearCapacity,
+    totalStaff,
+    staffOnDuty,
+    revenueAgg,
+    todayRevenueAgg,
+    lastMonthRevenueAgg,
+    monthlyRevenueAgg,
+    statusBreakdown,
+    paymentBreakdown,
+    serviceBreakdown,
+    topCustomersAgg,
+    topCouriersData,
+    dropPointData,
+    recentOrdersData,
+    avgTurnaroundAgg,
+    completionRateAgg,
+    avgRatingAgg,
+    totalReviewsAgg,
+    peakHoursAgg,
+    avgResponseTimeAgg,
+  ] = await Promise.all([
+    // Basic counts
+    Order.countDocuments(),
+    Order.countDocuments({ createdAt: { $gte: startOfDay } }),
+    Order.countDocuments({ status: "waiting_confirmation" }),
+    Order.countDocuments({
+      status: {
+        $in: [
+          "processing",
+          "in_workshop",
+          "qc_check",
+          "pickup_in_progress",
+          "delivery_in_progress",
+        ],
       },
-    },
-  ]);
+    }),
+    Order.countDocuments({ status: "completed" }),
+    Order.countDocuments({ status: "cancelled" }),
 
-  // ====== PAYMENT STATUS BREAKDOWN ======
-  const paymentBreakdown = await Order.aggregate([
-    {
-      $group: {
-        _id: "$payment.status",
-        count: { $sum: 1 },
-        totalAmount: { $sum: "$payment.finalAmount" },
-      },
-    },
-  ]);
+    // Customers
+    Users.countDocuments({ role: "customer" }),
+    Users.countDocuments({
+      role: "customer",
+      createdAt: { $gte: startOfMonth },
+    }),
+    Users.countDocuments({ role: "customer", totalOrders: { $gt: 1 } }),
 
-  // ====== SERVICE TYPE BREAKDOWN ======
-  const serviceBreakdown = await Order.aggregate([
-    {
-      $group: {
-        _id: "$serviceType",
-        count: { $sum: 1 },
-        totalRevenue: { $sum: "$payment.finalAmount" },
-      },
-    },
-  ]);
+    // Couriers
+    Users.countDocuments({ role: "courier" }),
+    Users.countDocuments({ role: "courier", "courierInfo.isAvailable": true }),
 
-  // ====== REVENUE STATS ======
-  const revenueStats = await Order.aggregate([
-    {
-      $match: {
-        "payment.status": "paid",
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        totalRevenue: { $sum: "$payment.finalAmount" },
-        avgOrderValue: { $avg: "$payment.finalAmount" },
-        totalOrders: { $sum: 1 },
-      },
-    },
-  ]);
+    // Drop Points
+    DropPoint.countDocuments(),
+    DropPoint.countDocuments({
+      $expr: { $gte: [{ $divide: ["$currentLoad", "$capacity"] }, 0.8] },
+    }),
 
-  // ====== MONTHLY REVENUE (last 12 months) ======
-  const monthlyRevenue = await Order.aggregate([
-    {
-      $match: {
-        "payment.status": "paid",
-        paidAt: { $ne: null },
-      },
-    },
-    {
-      $project: {
-        month: { $dateToString: { format: "%Y-%m", date: "$paidAt" } },
-        amount: "$payment.finalAmount",
-      },
-    },
-    {
-      $group: {
-        _id: "$month",
-        revenue: { $sum: "$amount" },
-        orders: { $sum: 1 },
-      },
-    },
-    { $sort: { _id: 1 } },
-  ]);
+    // Staff
+    Users.countDocuments({
+      role: { $in: ["admin", "technician", "qc", "dropper"] },
+    }),
+    Users.countDocuments({
+      role: { $in: ["admin", "technician", "qc", "dropper"] },
+      isActive: true,
+    }),
 
-  // ====== TOP CUSTOMERS (by total spent) ======
-  const topCustomers = await Order.aggregate([
-    {
-      $match: {
-        "payment.status": "paid",
-        "customerInfo.userId": { $ne: null },
-      },
-    },
-    {
-      $group: {
-        _id: "$customerInfo.userId",
-        name: { $first: "$customerInfo.name" },
-        totalSpent: { $sum: "$payment.finalAmount" },
-        orderCount: { $sum: 1 },
-      },
-    },
-    { $sort: { totalSpent: -1 } },
-    { $limit: 5 },
-  ]);
-
-  // ====== TOP COURIERS (by deliveries completed) ======
-  const topCouriers = await Order.aggregate([
-    {
-      $match: {
-        status: "completed",
-        "tracking.courierId": { $ne: null },
-      },
-    },
-    {
-      $group: {
-        _id: "$tracking.courierId",
-        name: { $first: "$tracking.courierName" },
-        deliveries: { $sum: 1 },
-        totalRevenue: { $sum: "$payment.finalAmount" },
-      },
-    },
-    { $sort: { deliveries: -1 } },
-    { $limit: 5 },
-  ]);
-
-  // ====== DROP POINT UTILIZATION ======
-  const dropPointUtilization = await DropPoint.find(
-    {},
-    "name address capacity currentLoad status"
-  )
-    .lean()
-    .sort({ currentLoad: -1 })
-    .limit(5);
-
-  // ====== RECENT ORDERS (last 10) ======
-  const recentOrders = await Order.find()
-    .select(
-      "orderNumber customerInfo serviceType status payment.finalAmount payment.status createdAt"
-    )
-    .sort({ createdAt: -1 })
-    .limit(10)
-    .lean();
-
-  // ====== TODAY'S SUMMARY ======
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const todayStats = await Order.aggregate([
-    {
-      $match: {
-        createdAt: { $gte: today, $lt: tomorrow },
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        totalOrders: { $sum: 1 },
-        revenue: {
-          $sum: {
-            $cond: [
-              { $eq: ["$payment.status", "paid"] },
-              "$payment.finalAmount",
-              0,
-            ],
-          },
-        },
-        paidOrders: {
-          $sum: {
-            $cond: [{ $eq: ["$payment.status", "paid"] }, 1, 0],
-          },
+    // Revenue
+    Order.aggregate([
+      { $match: { status: { $ne: "cancelled" } } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$payment.finalAmount" },
+          avg: { $avg: "$payment.finalAmount" },
+          count: { $sum: 1 },
         },
       },
-    },
+    ]),
+
+    Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfDay },
+          status: { $ne: "cancelled" },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$payment.finalAmount" },
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+
+    Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
+          status: { $ne: "cancelled" },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$payment.finalAmount" } } },
+    ]),
+
+    Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sixMonthsAgo },
+          status: { $ne: "cancelled" },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+          revenue: { $sum: "$payment.finalAmount" },
+          orderCount: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+
+    // Breakdowns
+    Order.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+          revenue: { $sum: "$payment.finalAmount" },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]),
+    Order.aggregate([
+      {
+        $group: {
+          _id: "$payment.status",
+          count: { $sum: 1 },
+          amount: { $sum: "$payment.finalAmount" },
+        },
+      },
+    ]),
+    Order.aggregate([
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.treatmentType",
+          count: { $sum: 1 },
+          revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]),
+
+    // Top Customers
+    Order.aggregate([
+      {
+        $match: {
+          status: { $ne: "cancelled" },
+          "customerInfo.userId": { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: "$customerInfo.userId",
+          name: { $first: "$customerInfo.name" },
+          orderCount: { $sum: 1 },
+          totalSpent: { $sum: "$payment.finalAmount" },
+          lastOrder: { $max: "$createdAt" },
+        },
+      },
+      { $sort: { totalSpent: -1 } },
+      { $limit: 5 },
+    ]),
+
+    // Top Couriers
+    Users.find({ role: "courier" }, { name: 1, courierInfo: 1, phone: 1 })
+      .sort({ "courierInfo.totalDeliveries": -1 })
+      .limit(5)
+      .lean(),
+
+    // Drop Points
+    DropPoint.find().select("name address capacity currentLoad status").lean(),
+
+    // Recent Orders
+    Order.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select(
+        "orderNumber customerInfo items status payment createdAt priority"
+      )
+      .lean(),
+
+    // Operational Metrics
+    Order.aggregate([
+      {
+        $match: {
+          status: "completed",
+          "tracking.completedTime": { $exists: true },
+          createdAt: { $exists: true },
+        },
+      },
+      {
+        $project: {
+          duration: { $subtract: ["$tracking.completedTime", "$createdAt"] },
+        },
+      },
+      { $group: { _id: null, avgDuration: { $avg: "$duration" } } },
+    ]),
+
+    Order.countDocuments({ status: "completed" }).then((count) => ({
+      total: count,
+    })),
+
+    Order.aggregate([
+      { $match: { rating: { $exists: true } } },
+      {
+        $group: {
+          _id: null,
+          avgRating: { $avg: "$rating" },
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+
+    Order.countDocuments({ rating: { $exists: true } }),
+
+    Order.aggregate([
+      { $match: { createdAt: { $gte: startOfDay } } },
+      { $group: { _id: { $hour: "$createdAt" }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 1 },
+    ]),
+
+    // Placeholder untuk response time (bisa diganti dengan data real dari chat/notification system)
+    Promise.resolve([{ _id: null, avgTime: 8 }]),
   ]);
 
-  // ====== PENDING ORDERS ALERT ======
-  const pendingOrders = await Order.countDocuments({
-    status: { $in: ["pending", "waiting_confirmation"] },
-  });
+  // Calculate metrics
+  const currentMonthRevenue =
+    monthlyRevenueAgg.find(
+      (m: any) =>
+        m._id ===
+        `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+    )?.revenue || 0;
+  const lastMonthRevenue = lastMonthRevenueAgg[0]?.total || 0;
+  const revenueGrowth =
+    lastMonthRevenue > 0
+      ? (
+          ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) *
+          100
+        ).toFixed(1)
+      : 0;
 
-  const processingOrders = await Order.countDocuments({
-    status: { $in: ["confirmed", "courier_assigned"] },
-  });
+  const avgTurnaroundHours = avgTurnaroundAgg[0]?.avgDuration
+    ? Math.round(avgTurnaroundAgg[0].avgDuration / (1000 * 60 * 60))
+    : 0;
 
-  // ====== FORMAT DATA ======
-  const statusMap: Record<string, string> = {
-    pending: "Menunggu Konfirmasi",
-    waiting_confirmation: "Menunggu Pembayaran",
+  const completionRate =
+    totalOrders > 0
+      ? Math.round((completedOrdersCount / totalOrders) * 100)
+      : 0;
+  const efficiencyRate =
+    totalOrders > 0
+      ? Math.round(
+          ((completedOrdersCount + processingOrdersCount) / totalOrders) * 100
+        )
+      : 0;
+  const retentionRate =
+    totalCustomers > 0
+      ? Math.round((returningCustomers / totalCustomers) * 100)
+      : 0;
+
+  const peakHour = peakHoursAgg[0]?._id;
+  const peakHours =
+    peakHour !== undefined
+      ? `${String(peakHour).padStart(2, "0")}:00 - ${String(
+          peakHour + 2
+        ).padStart(2, "0")}:00`
+      : "Belum ada data";
+
+  // Labels
+  const statusLabels: Record<string, string> = {
+    pending: "Pending",
+    waiting_confirmation: "Menunggu Konfirmasi",
     confirmed: "Dikonfirmasi",
-    courier_assigned: "Kurir Ditujuk",
+    courier_assigned: "Kurir Ditugaskan",
     pickup_in_progress: "Proses Jemput",
     picked_up: "Diambil",
     in_workshop: "Di Workshop",
@@ -340,89 +325,132 @@ export async function getDashboardStats(): Promise<DashboardData> {
     cancelled: "Dibatalkan",
   };
 
-  const paymentMap: Record<string, string> = {
-    pending: "Menunggu Pembayaran",
-    waiting_confirmation: "Menunggu Konfirmasi",
+  const paymentLabels: Record<string, string> = {
+    pending: "Menunggu",
+    waiting_confirmation: "Konfirmasi",
     paid: "Dibayar",
     failed: "Gagal",
     refunded: "Dikembalikan",
   };
 
-  const serviceMap: Record<string, string> = {
-    "antar-jemput": "Antar Jemput",
-    "drop-point": "Drop Point",
+  const serviceLabels: Record<string, string> = {
+    deep_clean: "Deep Clean",
+    fast_clean: "Fast Clean",
+    regular_clean: "Regular Clean",
+    repair: "Perbaikan",
+    recolor: "Pewarnaan Ulang",
+    unyellowing: "Anti Kuning",
+    waterproofing: "Waterproofing",
   };
 
   return {
     counts: {
       totalOrders,
+      todayOrders: todayOrdersCount,
+      pendingOrders: pendingOrdersCount,
+      processingOrders: processingOrdersCount,
+      completedOrders: completedOrdersCount,
+      cancelledOrders: cancelledOrdersCount,
       totalCustomers,
       totalCouriers,
       totalDropPoints,
       totalStaff,
-      pendingOrders,
-      processingOrders,
     },
-    revenue: revenueStats[0] || {
-      totalRevenue: 0,
-      avgOrderValue: 0,
-      totalOrders: 0,
+    newCustomersThisMonth,
+    returningCustomers,
+    activeCouriers: activeCouriersCount,
+    dropPointsNearCapacity,
+
+    revenue: {
+      totalRevenue: revenueAgg[0]?.total || 0,
+      avgOrderValue: Math.round(revenueAgg[0]?.avg || 0),
+      totalOrders: revenueAgg[0]?.count || 0,
     },
-    statusBreakdown: statusBreakdown.map((item) => ({
-      status: item._id,
-      label: statusMap[item._id] || item._id,
-      count: item.count,
-      revenue: item.totalRevenue,
-    })),
-    paymentBreakdown: paymentBreakdown.map((item) => ({
-      status: item._id,
-      label: paymentMap[item._id] || item._id,
-      count: item.count,
-      amount: item.totalAmount,
-    })),
-    serviceBreakdown: serviceBreakdown.map((item) => ({
-      type: item._id,
-      label: serviceMap[item._id] || item._id,
-      count: item.count,
-      revenue: item.totalRevenue,
-    })),
-    topCustomers: topCustomers.map((c) => ({
-      name: c.name,
-      totalSpent: c.totalSpent,
-      orderCount: c.orderCount,
-    })),
-    topCouriers: topCouriers.map((c) => ({
-      name: c.name,
-      deliveries: c.deliveries,
-      totalRevenue: c.totalRevenue,
-    })),
-    dropPointUtilization: dropPointUtilization.map((dp) => ({
-      name: dp.name,
-      address: dp.address,
-      capacity: dp.capacity,
-      currentLoad: dp.currentLoad,
-      utilizationRate:
-        dp.capacity > 0 ? Math.round((dp.currentLoad / dp.capacity) * 100) : 0,
-      status: dp.status,
-    })),
-    recentOrders: recentOrders.map((o) => ({
-      orderNumber: o.orderNumber,
-      customer: o.customerInfo.name,
-      service: o.serviceType === "antar-jemput" ? "Antar Jemput" : "Drop Point",
-      status: o.status,
-      amount: o.payment.finalAmount,
-      paymentStatus: o.payment.status,
-      createdAt: o.createdAt,
-    })),
-    monthlyRevenue: monthlyRevenue.map((m) => ({
+
+    todayStats: {
+      revenue: todayRevenueAgg[0]?.total || 0,
+      orders: todayRevenueAgg[0]?.count || 0,
+    },
+
+    monthlyRevenue: monthlyRevenueAgg.map((m: any) => ({
       month: m._id,
       revenue: m.revenue,
-      orders: m.orders,
+      orderCount: m.orderCount,
     })),
-    todayStats: todayStats[0] || {
-      totalOrders: 0,
-      revenue: 0,
-      paidOrders: 0,
-    },
+
+    statusBreakdown: statusBreakdown.map((s: any) => ({
+      status: s._id,
+      label: statusLabels[s._id] || s._id,
+      count: s.count,
+      revenue: s.revenue,
+    })),
+
+    paymentBreakdown: paymentBreakdown.map((p: any) => ({
+      status: p._id,
+      label: paymentLabels[p._id] || p._id,
+      count: p.count,
+      amount: p.amount,
+    })),
+
+    serviceBreakdown: serviceBreakdown.map((s: any) => ({
+      type: s._id,
+      label: serviceLabels[s._id] || s._id,
+      count: s.count,
+      revenue: s.revenue,
+    })),
+
+    topCustomers: topCustomersAgg.map((c: any) => ({
+      name: c.name || "Tidak diketahui",
+      orderCount: c.orderCount,
+      totalSpent: c.totalSpent,
+      lastOrderDays: c.lastOrder
+        ? Math.floor(
+            (now.getTime() - new Date(c.lastOrder).getTime()) /
+              (1000 * 60 * 60 * 24)
+          )
+        : 0,
+    })),
+
+    topCouriers: topCouriersData.map((c: any) => ({
+      name: c.name,
+      completedOrders: c.courierInfo?.totalDeliveries || 0,
+      todayDeliveries: c.courierInfo?.todayDeliveries || 0,
+      totalDistance: (c.courierInfo?.totalDeliveries || 0) * 3.5,
+      avgDeliveryTime: 0,
+      totalRevenue: (c.courierInfo?.totalDeliveries || 0) * 15000,
+      isAvailable: c.courierInfo?.isAvailable || false,
+    })),
+
+    dropPointUtilization: dropPointData.map((dp: any) => ({
+      ...dp,
+      utilizationRate:
+        dp.capacity > 0 ? Math.floor((dp.currentLoad / dp.capacity) * 100) : 0,
+    })),
+
+    recentOrders: recentOrdersData.map((o: any) => ({
+      orderNumber: o.orderNumber,
+      customer: o.customerInfo?.name || "Guest",
+      customerPhone: o.customerInfo?.phone,
+      service:
+        o.items
+          ?.map((i: any) => serviceLabels[i.treatmentType] || i.treatmentType)
+          .join(", ") || "Umum",
+      status: o.status,
+      paymentStatus: o.payment?.status,
+      amount: o.payment?.finalAmount || 0,
+      createdAt: o.createdAt,
+      priority: o.priority || "medium",
+    })),
+
+    avgTurnaroundTime: avgTurnaroundHours,
+    completionRate,
+    avgRating: Math.round((avgRatingAgg[0]?.avgRating || 0) * 10) / 10,
+    totalReviews: totalReviewsAgg,
+    orderManagementRate: efficiencyRate,
+    peakHours,
+    peakHourOrderCount: peakHoursAgg[0]?.count || 0,
+    customerRetentionRate: retentionRate,
+    avgResponseTime: avgResponseTimeAgg[0]?.avgTime || 0,
+    revenueGrowth,
   };
-}
+});

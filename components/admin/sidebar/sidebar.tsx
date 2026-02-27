@@ -2,7 +2,7 @@
 
 // import Image from 'next/image'
 import { Dashboard } from '@/components/asideMenu/dashboard/dashboard';
-import { ArchiveIcon, ClipboardCheckIcon, FootprintsIcon, HomeIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon, BrushCleaningIcon, StoreIcon } from 'lucide-react'
+import { ArchiveIcon, ClipboardCheckIcon, FootprintsIcon, HomeIcon, NavigationIcon, Layers3Icon, LayoutDashboardIcon, LogOutIcon, MapPinHouseIcon, PackageIcon, PackageSearchIcon, ScrollTextIcon, ShoppingCartIcon, StarIcon, UsersRoundIcon, UserStarIcon, VanIcon, WrenchIcon, BrushCleaningIcon, StoreIcon } from 'lucide-react'
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
@@ -37,20 +37,35 @@ interface AdminMenuListType {
 const Sidebar = (props: SidebarType) => {
     const [pendingCount, setPendingCount] = useState(0);
     const [processingCount, setProcessingCount] = useState(0);
+    const [trackingCount, setTrackingCount] = useState(0);
 
     // Fetch pending orders count
     useEffect(() => {
         if (props.userRole === "admin") {
             fetchPendingCount();
-            fetchProcessingCount();  // ⬅️ TAMBAHKAN INI
+            fetchProcessingCount();
+            fetchTrackingCount();
             // Polling setiap 30 detik
             const interval = setInterval(() => {
                 fetchPendingCount();
-                fetchProcessingCount();  // ⬅️ TAMBAHKAN INI
-            }, 30000);
+                fetchProcessingCount();
+                fetchTrackingCount();
+            }, 5000);
             return () => clearInterval(interval);
         }
     }, [props.userRole]);
+
+    const fetchTrackingCount = async () => {
+        try {
+            const res = await fetch("/api/admin/orders/tracking/count");
+            const data = await res.json();
+            if (data.success) {
+                setTrackingCount(data.count);
+            }
+        } catch (error) {
+            console.error("Failed to fetch tracking count");
+        }
+    };
 
     const fetchPendingCount = async () => {
         try {
@@ -80,14 +95,19 @@ const Sidebar = (props: SidebarType) => {
     const MenuListData: AdminMenuListType[] = [
         {
             admin: [
-                { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/admin/dashboard" },
+                {
+                    id: 1,
+                    label: 'Dashboard',
+                    icon: <LayoutDashboardIcon size={20} />,
+                    path: "/admin/dashboard"
+                },
                 {
                     id: 2,
                     label: 'Pesanan Masuk',
                     icon: <div className="relative">
                         <ShoppingCartIcon size={20} />
                         {pendingCount > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                                 {pendingCount > 9 ? '9+' : pendingCount}
                             </span>
                         )}
@@ -100,17 +120,66 @@ const Sidebar = (props: SidebarType) => {
                     icon: <div className="relative">
                         <PackageIcon size={20} />
                         {processingCount > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                                 {processingCount > 9 ? '9+' : processingCount}
                             </span>
                         )}
                     </div>,
                     path: "/admin/perlu-diproses"
                 },
-                { id: 5, label: 'Status Pesanan & History', icon: <ScrollTextIcon size={20} />, path: "/admin/order-history" },
-                { id: 3, label: 'Drop Point', icon: <MapPinHouseIcon size={20} />, path: "/admin/drop-point" },
-                { id: 4, label: 'Workshop', icon: <StoreIcon size={20} />, path: "/admin/workshop" },
-                { id: 6, label: 'Ulasan Customer', icon: <StarIcon size={20} />, path: "/admin/semua-ulasan-customer" },
+                {
+                    id: 8,
+                    label: 'Monitoring Order',
+                    icon: (() => {
+                        // Warna badge berdasarkan urgency
+                        let badgeColor = "bg-blue-500";
+                        let iconColor = "text-blue-600";
+
+                        if (trackingCount > 10) {
+                            badgeColor = "bg-red-500"; // Banyak order = urgent
+                            iconColor = "text-red-600";
+                        } else if (trackingCount > 5) {
+                            badgeColor = "bg-orange-500"; // Sedang = warning
+                            iconColor = "text-orange-600";
+                        }
+
+                        return (
+                            <div className="relative">
+                                <NavigationIcon size={20} className={iconColor} />
+                                {trackingCount > 0 && (
+                                    <span className={`absolute -top-2 -right-2 ${badgeColor} text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold ${trackingCount > 10 ? 'animate-pulse' : ''}`}>
+                                        {trackingCount > 9 ? '9+' : trackingCount}
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })(),
+                    path: "/admin/order-tracking"
+                },
+                {
+                    id: 5,
+                    label: 'Riwayat Pesanan',
+                    icon: <ScrollTextIcon size={20} />,
+                    path: "/admin/order-history"
+                },
+                {
+                    id: 3,
+                    label: 'Drop Point',
+                    icon: <MapPinHouseIcon size={20} />,
+                    path: "/admin/drop-point"
+                },
+                {
+                    id: 4,
+                    label: 'Workshop',
+                    icon: <StoreIcon size={20} />,
+                    path: "/admin/workshop"
+                },
+                {
+                    id: 6,
+                    label: 'Ulasan Customer',
+                    icon: <StarIcon size={20} />,
+                    path: "/admin/semua-ulasan-customer"
+                },
             ],
             memberUser: [
                 { id: 1, label: 'Dashboard', icon: <LayoutDashboardIcon size={20} />, path: "/layanan" },  // ← TAMBAHKAN path

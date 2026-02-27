@@ -69,6 +69,9 @@ const ActiveCourierSchema = new mongoose.Schema({
   },
   acceptedAt: { type: Date, default: Date.now },
   startedPickupAt: { type: Date, default: null },
+  customerContacted: { type: Boolean, default: false },
+  contactedAt: { type: Date, default: null }, 
+  completedAt: { type: Date, default: null }, 
   currentLocation: {
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },

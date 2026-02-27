@@ -1,11 +1,14 @@
+// /app/api/courier/orders/[id]/accept/route.ts - FIX PARAMS
 import { NextRequest, NextResponse } from "next/server";
 import { Order } from "@/app/models/orders";
+import { Users } from "@/app/models/users";
 import connectDB from "@/lib/mongodb";
 import { getUser } from "@/lib/auth";
+import mongoose from "mongoose";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ⬅️ Promise
 ) {
   try {
     const user = await getUser();
@@ -17,65 +20,114 @@ export async function POST(
       );
     }
 
-    const { id } = params;
-    const courierId = user.id;
+    // ⬅️ AWAIT PARAMS
+    const { id } = await params;
+    const courierId = user._id?.toString() || user.id;
+    const courierObjectId = new mongoose.Types.ObjectId(courierId);
+
+    console.log("✅ Accept API - Order ID:", id);
+    console.log("✅ Accept API - Courier ID:", courierId);
 
     await connectDB();
 
-    // Cek apakah kurir sudah punya order aktif yang sedang dikerjakan
-    const activeOrder = await Order.findOne({
-      "activeCourier.courierId": courierId,
-      status: { $in: ["pickup_in_progress", "picked_up", "in_workshop", "processing"] }
+    // Cek apakah kurir sudah punya tugas aktif
+    const existingActive = await Order.findOne({
+      "activeCourier.courierId": courierObjectId,
+      status: { 
+        $in: ["pickup_in_progress", "picked_up", "delivery_in_progress"] 
+      }
     });
 
-    if (activeOrder) {
+    if (existingActive) {
       return NextResponse.json(
-        { success: false, message: "Anda masih memiliki order aktif. Selesaikan terlebih dahulu." },
+        { 
+          success: false, 
+          message: "Anda masih memiliki tugas aktif. Selesaikan tugas sebelumnya terlebih dahulu.",
+          activeOrder: {
+            orderNumber: existingActive.orderNumber,
+            status: existingActive.status
+          }
+        },
         { status: 400 }
       );
     }
 
-    // Update order: set activeCourier dan update queue status
-    const updatedOrder = await Order.findOneAndUpdate(
-      {
-        _id: id,
-        "courierQueue.courierId": courierId,
-        "courierQueue.status": "pending"
-      },
+    // Cek order ada di queue dan status pending
+    const order = await Order.findOne({
+      _id: new mongoose.Types.ObjectId(id),
+      "courierQueue.courierId": courierObjectId,
+      "courierQueue.status": "pending"
+    });
+
+    console.log("✅ Accept API - Order found:", order ? "YES" : "NO");
+
+    if (!order) {
+      return NextResponse.json(
+        { success: false, message: "Order tidak ditemukan di antrian Anda" },
+        { status: 404 }
+      );
+    }
+
+    const now = new Date();
+
+    // Update order
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
       {
         $set: {
-          "courierQueue.$.status": "accepted",
-          "courierQueue.$.acceptedAt": new Date(),
           activeCourier: {
-            courierId,
-            acceptedAt: new Date(),
-            startedPickupAt: null,
-            currentLocation: null
+            courierId: courierObjectId,
+            acceptedAt: now,
+            startedPickupAt: null
           },
           status: "pickup_in_progress",
-          "tracking.courierId": courierId,
-          "tracking.courierName": user.name,
-          updatedAt: new Date()
+          updatedAt: now
+        },
+        $push: {
+          statusHistory: {
+            status: "pickup_in_progress",
+            timestamp: now,
+            updatedBy: courierObjectId,
+            updatedByName: user.name,
+            notes: "Kurir menerima tugas dan akan menuju lokasi customer"
+          }
         }
       },
       { new: true }
     );
 
-    if (!updatedOrder) {
-      return NextResponse.json(
-        { success: false, message: "Order tidak ditemukan atau sudah diambil kurir lain" },
-        { status: 404 }
-      );
-    }
+    // Update queue entry jadi accepted
+    await Order.updateOne(
+      { 
+        _id: new mongoose.Types.ObjectId(id), 
+        "courierQueue.courierId": courierObjectId 
+      },
+      {
+        $set: {
+          "courierQueue.$.status": "accepted",
+          "courierQueue.$.acceptedAt": now
+        }
+      }
+    );
+
+    // Update user status
+    await Users.findByIdAndUpdate(courierId, {
+      "courierInfo.currentDeliveryId": new mongoose.Types.ObjectId(id),
+      "courierInfo.isAvailable": false
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Tugas diterima. Silakan menuju lokasi customer.",
-      data: updatedOrder
+      message: "Order berhasil diterima",
+      data: {
+        orderId: updatedOrder._id,
+        orderNumber: updatedOrder.orderNumber,
+        status: updatedOrder.status
+      }
     });
 
   } catch (error) {
-    console.error("Accept task error:", error);
+    console.error("❌ Accept order error:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

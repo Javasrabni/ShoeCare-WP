@@ -2,6 +2,35 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* /app/globals.css - Tambahkan safe area support */
+/* @import "tailwindcss/preflight" */
+/* @tailwind utilities; */
+
+
+/* Safe area for mobile devices */
+.h-safe-area-inset-bottom {
+  height: env(safe-area-inset-bottom, 0px);
+}
+
+/* Smooth transitions for bottom nav */
+nav a {
+  transition: all 0.2s ease;
+}
+
+nav a:active {
+  transform: scale(0.95);
+}
+
+/* Active state animation */
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+nav a:hover svg {
+  animation: bounce-subtle 0.3s ease;
+}
+
 @custom-variant dark (&:is(.dark *));
 @plugin "flowbite/plugin";
 
@@ -181,3 +210,46 @@ body {
     @apply bg-background text-foreground;
   }
 } */
+
+
+ /* /app/globals.css - Tambahkan CSS untuk map */
+/* Leaflet Map Styles */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 1;
+}
+
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Safe area for mobile bottom nav */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Animation for pulsing marker */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.pulse-marker::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.4);
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}

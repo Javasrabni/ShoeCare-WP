@@ -185,6 +185,49 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
+        {/* Revenue Card */}
+        <div className="bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-200 p-6 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-2xl"></div>
+          
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <DollarSign size={20} className="text-white" />
+                </div>
+                <p className="text-blue-100 text-sm font-medium">Total Pendapatan</p>
+              </div>
+              <p className="text-4xl md:text-5xl font-bold text-white tracking-tight">{formatRupiah(data.revenue.totalRevenue)}</p>
+              
+              <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/20">
+                <div>
+                  <p className="text-blue-200 text-xs mb-1">Rata-rata Order</p>
+                  <p className="font-semibold text-white text-lg">{formatRupiah(data.revenue.avgOrderValue)}</p>
+                </div>
+                <div>
+                  <p className="text-blue-200 text-xs mb-1">Total Transaksi</p>
+                  <p className="font-semibold text-white text-lg">{data.revenue.totalOrders}</p>
+                </div>
+                <div>
+                  <p className="text-blue-200 text-xs mb-1">Hari Ini</p>
+                  <p className="font-semibold text-white text-lg">{formatRupiah(data.todayStats.revenue)}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="hidden md:flex flex-col items-end gap-3">
+              <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                <TrendingUp size={48} className="text-white/90" />
+              </div>
+              <div className="text-right">
+                <p className="text-blue-200 text-xs">Performance</p>
+                <p className="text-white font-semibold">+12.5% vs bulan lalu</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Alert Cards */}
         {(data.counts.pendingOrders > 0 || data.counts.processingOrders > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -250,48 +293,7 @@ export default async function AdminDashboardPage() {
           />
         </div>
 
-        {/* Revenue Card */}
-        <div className="bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 rounded-2xl shadow-lg shadow-blue-200 p-6 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-2xl"></div>
-          
-          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <DollarSign size={20} className="text-white" />
-                </div>
-                <p className="text-blue-100 text-sm font-medium">Total Pendapatan</p>
-              </div>
-              <p className="text-4xl md:text-5xl font-bold text-white tracking-tight">{formatRupiah(data.revenue.totalRevenue)}</p>
-              
-              <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/20">
-                <div>
-                  <p className="text-blue-200 text-xs mb-1">Rata-rata Order</p>
-                  <p className="font-semibold text-white text-lg">{formatRupiah(data.revenue.avgOrderValue)}</p>
-                </div>
-                <div>
-                  <p className="text-blue-200 text-xs mb-1">Total Transaksi</p>
-                  <p className="font-semibold text-white text-lg">{data.revenue.totalOrders}</p>
-                </div>
-                <div>
-                  <p className="text-blue-200 text-xs mb-1">Hari Ini</p>
-                  <p className="font-semibold text-white text-lg">{formatRupiah(data.todayStats.revenue)}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="hidden md:flex flex-col items-end gap-3">
-              <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
-                <TrendingUp size={48} className="text-white/90" />
-              </div>
-              <div className="text-right">
-                <p className="text-blue-200 text-xs">Performance</p>
-                <p className="text-white font-semibold">+12.5% vs bulan lalu</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

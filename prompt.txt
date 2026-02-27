@@ -1,5 +1,5 @@
 Saya sedang mengembangkan sistem ShoeCare (laundry sepatu) dengan Next.js + MongoDB. 
-Mohon ambilkan semua file berikut untuk analisis dan debugging:
+Mohon ambilkan semua file berikut untuk analisis dan debugging :
 
 ---
 
@@ -70,3 +70,11 @@ Untuk setiap file, mohon berikan dalam format:
 ```typescript
 // File: [path lengkap]
 [kode lengkap file tersebut]
+
+
+Jika file tidak ditemukan, tuliskan:
+
+// File: [path] - NOT FOUND
+
+
+dan buat file "hasil.txt" untuk menampung semua isi file/sintaks yang telah kamu ambil:
